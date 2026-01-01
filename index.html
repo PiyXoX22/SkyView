@@ -2,7 +2,7 @@
   <html lang="id">
   <head>
   <meta charset="UTF-8">
-  <title>Sky View + Milky Way & Warp + Music</title>
+  <title>SpaDu | Space Education</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
   body { margin:0; overflow:hidden; background:black; }
@@ -11,6 +11,57 @@
   #controls { position:absolute; bottom:10px; left:10px; color:white; font-family:monospace; }
   button { background:black; color:#0ff; border:1px solid #0ff; padding:6px 10px; cursor:pointer; margin-top:6px; }
   .label { position: absolute; color: #0ff; font-family: monospace; font-size: 12px; pointer-events: none; }
+  #mobileControls{
+  position:fixed;
+  bottom:20px;
+  left:20px;
+  display:none;
+  z-index:999;
+}
+
+#mobileControls button{
+  width:55px;
+  height:55px;
+  font-size:22px;
+  margin:4px;
+  border:none;
+  border-radius:50%;
+  background:rgba(0,0,0,0.5);
+  color:white;
+}
+
+.pad{
+  display:inline-block;
+}
+
+.updown{
+  display:inline-block;
+  margin-left:15px;
+}
+#teleportPanel{
+  position:fixed;
+  top:0;
+  left:-260px;
+  width:240px;
+  height:100%;
+  background:rgba(0,0,0,0.9);
+  color:#0ff;
+  font-family:monospace;
+  padding:15px;
+  border-right:1px solid #0ff;
+  transition:left 0.3s ease;
+  z-index:1000;
+}
+
+#teleportPanel h3{
+  margin-top:0;
+  text-align:center;
+}
+
+#teleportPanel button{
+  width:100%;
+  margin:6px 0;
+}
 
   </style>
   </head>
@@ -18,9 +69,9 @@
 
   <body>
   <div id="hud">
-  🌌 SKY VIEW<br>
-  🌍 Earth + 🌕 Moon HD<br>
-  🚀 Free Fly + Aurora & Warp + Music
+  🌌 Space Education<br>
+  🌍 By PiyXoX Developer From Indonesia<br>
+  🚀 Educating To Public About Astronomy
   </div>
 
 
@@ -53,14 +104,21 @@
   <button id="telescopeBtn">🔭 Telescope Mode</button><br>
   <button id="freeBtn">🚀 Free Fly Mode</button><br><br>
 
-  Teleport to:<br>
-  <button id="toEarthBtn">🌍 Earth</button>
-  <button id="toMoonBtn">🌕 Moon</button>
-  <button id="toOrionBtn">🌌 Orion Nebula</button>
-  <button id="toBlackHoleBtn">🕳️ Black Hole</button>
-  <button id="toPleiadesBtn">🌟 Pleiades</button><br><br>
+  <button id="openTeleport">🧭 Teleport</button><br><br>
   <button onclick="playMusic()">▶️ Play Music</button>
   <button onclick="pauseMusic()">⏸️ Pause Music</button>
+
+  <div id="teleportPanel">
+    <h3>🧭 Teleport Menu</h3>
+    <button id="tpEarth">🌍 Earth</button>
+    <button id="tpMoon">🌕 Moon</button>
+    <button id="tpOrion">🌌 Orion</button>
+    <button id="tpBlackHole">🕳️ Black Hole</button>
+    <button id="tpPleiades">🌟 Pleiades</button>
+    <hr>
+    <button id="closeTeleport">❌ Close</button>
+  </div>
+  
   </div>    
 
   <!-- YouTube Player -->
@@ -75,6 +133,7 @@
   <script src="https://www.youtube.com/iframe_api"></script>
 
   <script>
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   // ======================
   // YOUTUBE MUSIC
   // ======================
@@ -103,6 +162,7 @@
   function pauseMusic(){
     if(player) player.pauseVideo();
   }
+
 
 
   const infoPanel = document.getElementById('infoPanel');
@@ -178,6 +238,40 @@ solarSystem.position.set(
   flyControls.dragToLook = true;
 
   let freeMode = false;
+
+  // ======================
+// MOBILE FREE FLY SETUP
+// ======================
+const moveState = {
+  forward:false,
+  back:false,
+  left:false,
+  right:false,
+  up:false,
+  down:false
+};
+
+if(isMobile){
+  const mc = document.getElementById("mobileControls");
+
+  document.getElementById("freeBtn").addEventListener("click", ()=>{
+    mc.style.display = freeMode ? "block" : "none";
+  });
+
+  document.querySelectorAll("#mobileControls button").forEach(btn=>{
+    const dir = btn.dataset.dir;
+
+    btn.addEventListener("touchstart", e=>{
+      e.preventDefault();
+      moveState[dir] = true;
+    });
+
+    btn.addEventListener("touchend", ()=>{
+      moveState[dir] = false;
+    });
+  });
+}
+
 
 // ======================
 // RA / DEC TO XYZ
@@ -574,12 +668,6 @@ orion.rotation.x = THREE.MathUtils.degToRad(23.4);
 skyGroup.add(orion);
 
 
-
-
-  const aurora = new THREE.Mesh(new THREE.RingGeometry(850,1200,64), new THREE.MeshBasicMaterial({ color:0x55ccff, side:THREE.DoubleSide, transparent:true, opacity:0.2 }));
-  aurora.rotation.x = Math.PI/2;
-  orion.add(aurora);
-
   const blackHole = new THREE.Mesh(new THREE.SphereGeometry(140,32,32), new THREE.MeshBasicMaterial({ color:0x000000 }));
 placeDeepObject(blackHole, 5200);
 skyGroup.add(blackHole);
@@ -838,12 +926,40 @@ function placeDeepObject(obj, radius){
     }
     warpAnim();
   }
+// ======================
+// TELEPORT PANEL UI
+// ======================
+const teleportPanel = document.getElementById("teleportPanel");
 
-  document.getElementById('toEarthBtn').onclick = ()=> teleportTo(earthMesh, new THREE.Vector3(0,0,30));
-  document.getElementById('toMoonBtn').onclick = ()=> teleportTo(moon, new THREE.Vector3(0,0,10));
-  document.getElementById('toOrionBtn').onclick = ()=> teleportTo(orion, new THREE.Vector3(0,500,1000));
-  document.getElementById('toBlackHoleBtn').onclick = ()=> teleportTo(blackHole, new THREE.Vector3(0,300,1000));
-  document.getElementById('toPleiadesBtn').onclick = ()=> teleportTo(pleiades, new THREE.Vector3(0,100,500));
+document.getElementById("openTeleport").onclick = ()=>{
+  teleportPanel.style.left = "0";
+};
+
+document.getElementById("closeTeleport").onclick = ()=>{
+  teleportPanel.style.left = "-260px";
+};
+
+// TELEPORT ACTIONS
+document.getElementById("tpEarth").onclick = ()=>{
+  teleportTo(earthMesh, new THREE.Vector3(0,0,30));
+};
+
+document.getElementById("tpMoon").onclick = ()=>{
+  teleportTo(moon, new THREE.Vector3(0,0,10));
+};
+
+document.getElementById("tpOrion").onclick = ()=>{
+  teleportTo(orion, new THREE.Vector3(0,500,1000));
+};
+
+document.getElementById("tpBlackHole").onclick = ()=>{
+  teleportTo(blackHole, new THREE.Vector3(0,300,1000));
+};
+
+document.getElementById("tpPleiades").onclick = ()=>{
+  teleportTo(pleiades, new THREE.Vector3(0,100,500));
+};
+
 
   function animate(){
   requestAnimationFrame(animate);
@@ -874,8 +990,6 @@ p.position.set(
   moon.position.x = Math.cos(moon.userData.angle)*15;
   moon.position.z = Math.sin(moon.userData.angle)*15;
 
-  // aurora
-  aurora.rotation.z += 0.001*timeScale;
   // Sagittarius A* dynamics
 sagDisk.rotation.z += 0.004 * timeScale;
 sagLens.rotation.z -= 0.002 * timeScale;
@@ -889,8 +1003,11 @@ sagLens.rotation.z -= 0.002 * timeScale;
   });
 
   // controls
-  if(freeMode) flyControls.update(0.02);
-  else controls.update();
+  if(!isMobile && freeMode){
+  flyControls.update(0.02);
+}else{
+  controls.update();
+}
   meteors.forEach(m=>{
     m.position.add(m.userData.velocity);
   });
@@ -938,6 +1055,25 @@ disk.scale.setScalar(1 + s*0.6);
 skyGroup.rotation.y += SIDEREAL_SPEED * timeScale;
 sagA.rotation.y -= SIDEREAL_SPEED * timeScale * 0.4;
 
+// ==========================
+// MOBILE FREE FLY MOVEMENT
+// ==========================
+if(isMobile && freeMode){
+  const speed = 0.6 * timeScale;
+
+  const dir = new THREE.Vector3();
+  camera.getWorldDirection(dir);
+
+  const right = new THREE.Vector3();
+  right.crossVectors(dir, camera.up).normalize();
+
+  if(moveState.forward) camera.position.add(dir.clone().multiplyScalar(speed));
+  if(moveState.back)    camera.position.add(dir.clone().multiplyScalar(-speed));
+  if(moveState.left)    camera.position.add(right.clone().multiplyScalar(-speed));
+  if(moveState.right)   camera.position.add(right.clone().multiplyScalar(speed));
+  if(moveState.up)      camera.position.y += speed;
+  if(moveState.down)    camera.position.y -= speed;
+}
 
 
   renderer.render(scene,camera);
@@ -984,5 +1120,21 @@ if(target && target.userData.info){
   // optional reset
 
   </script>
+  <div id="mobileControls">
+    <div class="pad">
+      <button data-dir="forward">▲</button>
+      <div>
+        <button data-dir="left">◀</button>
+        <button data-dir="back">▼</button>
+        <button data-dir="right">▶</button>
+      </div>
+    </div>
+  
+    <div class="updown">
+      <button data-dir="up">⤒</button>
+      <button data-dir="down">⤓</button>
+    </div>
+  </div>
+  
   </body>
   </html>
