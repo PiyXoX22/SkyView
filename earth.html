@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Three.js Earth World – Mirror Lake & Animated Sunset</title>
+<style>
+body{margin:0;overflow:hidden;background:#000}
+#ui{position:absolute;top:20px;left:20px;z-index:10}
+button{padding:10px 16px;border:0;border-radius:6px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="ui"><button id="toggle">🌗 Senja / Malam</button></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script>
+// ================= SCENE =================
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x000000, 0.0005);
+
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 5000);
+camera.position.set(0, 40, 140);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// ================= LIGHT =================
+scene.add(new THREE.AmbientLight(0x555555));
+const sunLight = new THREE.DirectionalLight(0xffcc88, 1.4);
+sunLight.position.set(0, 300, -300);
+scene.add(sunLight);
+
+// ================= SKY =================
+const sky = new THREE.Mesh(
+  new THREE.SphereGeometry(3000, 64, 64),
+  new THREE.MeshBasicMaterial({ color: 0x000015, side: THREE.BackSide })
+);
+scene.add(sky);
+
+// ================= SUN & MOON =================
+const sun = new THREE.Mesh(
+  new THREE.SphereGeometry(50, 32, 32),
+  new THREE.MeshBasicMaterial({ color: 0xffcc55 })
+);
+sun.position.set(0, 250, -800);
+scene.add(sun);
+
+// Bulan
+const moon = new THREE.Mesh(
+  new THREE.SphereGeometry(40, 32, 32),
+  new THREE.MeshStandardMaterial({
+    color: 0xfffa88,
+    roughness: 1,
+    metalness: 0,
+    emissive: 0xffffcc,
+    emissiveIntensity: 0.3
+  })
+);
+moon.position.set(-200, 350, -600); // bulan dinaikkan ke langit
+scene.add(moon);
+
+// ================= TERRAIN =================
+const terrainGeo = new THREE.PlaneGeometry(3000, 3000, 260, 260);
+terrainGeo.rotateX(-Math.PI / 2);
+const pos = terrainGeo.attributes.position;
+for (let i = 0; i < pos.count; i++) {
+  const h = Math.sin(pos.getX(i) * 0.006) * Math.cos(pos.getZ(i) * 0.006) * 70;
+  pos.setY(i, h);
+}
+pos.needsUpdate = true;
+terrainGeo.computeVertexNormals();
+const terrain = new THREE.Mesh(
+  terrainGeo,
+  new THREE.MeshStandardMaterial({ color: 0x2f5d2f, roughness: 1 })
+);
+scene.add(terrain);
+
+
+// ================= STARS =================
+function createStars(count) {
+  const g = new THREE.BufferGeometry();
+  const p = [];
+  for (let i = 0; i < count; i++) {
+    const x = (Math.random() - 0.5) * 4000;
+    const y = 200 + Math.random() * 1000; // posisi Y lebih tinggi
+    const z = (Math.random() - 0.5) * 4000;
+    p.push(x, y, z);
+  }
+  g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));
+  return new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffffff, size: 2, sizeAttenuation: false }));
+}
+const starField = createStars(1000); // jumlah dikurangi
+scene.add(starField);
+
+// ================= POHON =================
+for(let i=0;i<50;i++){
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(1, 1, 10, 8),
+    new THREE.MeshStandardMaterial({color:0x8b4513})
+  );
+  const foliage = new THREE.Mesh(
+    new THREE.ConeGeometry(3, 8, 8),
+    new THREE.MeshStandardMaterial({color:0x228B22})
+  );
+  const x = (Math.random()-0.5)*1200;
+  const z = (Math.random()-0.5)*1200;
+  trunk.position.set(x, 5, z);
+  foliage.position.set(x, 11, z);
+  scene.add(trunk, foliage);
+}
+
+// ================= REALTIME MIRROR LAKE =================
+const mirrorRT = new THREE.WebGLRenderTarget(1024, 1024);
+const mirrorCamera = new THREE.PerspectiveCamera();
+const lakeMaterial = new THREE.MeshStandardMaterial({ color:0x223355, metalness:0.9, roughness:0.05, envMap:mirrorRT.texture });
+const lake = new THREE.Mesh(new THREE.CircleGeometry(300,64), lakeMaterial);
+lake.rotation.x=-Math.PI/2; lake.position.y=-4; scene.add(lake);
+
+// ================= VILLAGE =================
+const villageLights = [];
+for (let i=0;i<40;i++){
+  const house=new THREE.Mesh(new THREE.BoxGeometry(14,8,14),new THREE.MeshStandardMaterial({color:0x444444}));
+  const light=new THREE.PointLight(0xffcc88,2,150);
+  const x=300+i*18,z=150+Math.sin(i)*50;
+  house.position.set(x,4,z); light.position.set(x,10,z);
+  scene.add(house,light); villageLights.push(light);
+}
+
+// ================= CAMPFIRE =================
+const fire=new THREE.PointLight(0xff6600,2,220); fire.position.set(-80,15,80); scene.add(fire);
+
+// ================= MODE =================
+let night=true; let sunAngle=0;
+function setNight(){ 
+  sky.material.color.set(0x000015); 
+  scene.fog.color.set(0x000010); 
+  moon.visible = true; 
+  sun.visible = false; 
+  sunLight.intensity = 0.15; 
+  starField.visible = true;       // tampilkan bintang di malam
+  villageLights.forEach(l => { l.visible = true; l.intensity = 2; });
+}
+
+function setSunset(){ 
+  sky.material.color.set(0xff7744); 
+  scene.fog.color.set(0x553311); 
+  moon.visible = false; 
+  sun.visible = true; 
+  sunLight.intensity = 1.6; 
+  starField.visible = false;      // sembunyikan bintang di siang/sunset
+  villageLights.forEach(l => { l.visible = true; l.intensity = 0.6; });
+}
+
+
+setNight();
+document.getElementById('toggle').onclick=()=>{night=!night;night?setNight():setSunset();};
+
+// ================= ANIMATION =================
+function animate(){
+  requestAnimationFrame(animate);
+  fire.intensity=1.5+Math.sin(Date.now()*0.01)*0.6;
+  if(!night){ 
+    sunAngle+=0.0005; 
+    sun.position.y=250-Math.sin(sunAngle)*200; 
+    sun.position.z=-800+sunAngle*300; 
+    sunLight.position.copy(sun.position);
+  }
+  if(night){ moon.position.x=Math.sin(Date.now()*0.0001)*300;}
+  
+  mirrorCamera.position.copy(camera.position); 
+  mirrorCamera.position.y*=-1; 
+  mirrorCamera.rotation.copy(camera.rotation); 
+  mirrorCamera.updateProjectionMatrix();
+  
+  lake.visible=false; 
+  renderer.setRenderTarget(mirrorRT); 
+  renderer.render(scene,mirrorCamera); 
+  renderer.setRenderTarget(null); 
+  lake.visible=true;
+  
+  renderer.render(scene,camera);
+}
+animate();
+
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
