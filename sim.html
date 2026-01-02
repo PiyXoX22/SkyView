@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SpaDu | Space Education</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { margin:0; overflow:hidden; background:black; }
+#hud {
+position:fixed;
+top:10px;
+left:10px;
+color:#0ff;
+font-family:monospace;
+background:rgba(0,0,0,.6);
+padding:10px;
+border-radius:6px;
+z-index:1500;
+}
+#controls {
+position:fixed;
+bottom:10px;
+left:10px;
+color:white;
+font-family:monospace;
+z-index:1500;
+}
+
+button { background:black; color:#0ff; border:1px solid #0ff; padding:6px 10px; cursor:pointer; margin-top:6px; }
+.label { position: absolute; color: #0ff; font-family: monospace; font-size: 12px; pointer-events: none; }
+#mobileControls{
+position:fixed;
+bottom:20px;
+left:20px;
+display:none;
+z-index:1500;
+}
+
+
+#mobileControls button{
+width:55px;
+height:55px;
+font-size:22px;
+margin:4px;
+border:none;
+border-radius:50%;
+background:rgba(0,0,0,0.5);
+color:white;
+}
+
+.pad{
+display:inline-block;
+}
+
+.updown{
+display:inline-block;
+margin-left:15px;
+}
+#teleportPanel{
+position:fixed;
+top:0;
+left:-260px;
+width:240px;
+height:100%;
+background:rgba(0,0,0,0.9);
+color:#0ff;
+font-family:monospace;
+padding:15px;
+border-right:1px solid #0ff;
+transition:left 0.3s ease;
+z-index:1600;
+}
+
+#teleportPanel h3{
+margin-top:0;
+text-align:center;
+}
+
+#teleportPanel button{
+width:100%;
+margin:6px 0;
+}
+
+</style>
+</head>
+
+
+<body>
+<div id="hud">
+🌌 Space Education<br>
+🌍 By PiyXoX Developer From Indonesia<br>
+🚀 Educating To Public About Astronomy
+</div>
+
+
+<div id="infoPanel" style="
+  position:absolute;
+  top:50%;
+  right:20px;
+  transform:translateY(-50%);
+  width:260px;
+  background:rgba(0,0,0,0.75);
+  color:#0ff;
+  font-family:monospace;
+  padding:15px;
+  border:1px solid #0ff;
+  border-radius:10px;
+  display:none;
+  z-index:2000;
+">
+  <!-- 🔥 GAMBAR -->
+  <img id="infoImage" src="" style="
+  width:100%;
+  max-height:140px;
+  object-fit:cover;
+  border-radius:8px;
+  margin-bottom:10px;
+  display:none;
+  border:1px solid #0ff;
+  pointer-events:none;
+">
+
+  <h3 id="infoTitle">Object</h3>
+  <p id="infoDesc"></p>
+  <p id="infoSize"></p>
+  <p id="infoType"></p>
+  <button onclick="closeInfo()">❌ Close</button>
+</div>
+
+
+<div id="controls">
+Time Speed<br>
+<input type="range" id="timeScale" min="0.1" max="10" step="0.1" value="1"><br><br>
+<button id="telescopeBtn">🔭 Telescope Mode</button><br>
+<button id="freeBtn">🚀 Free Fly Mode</button><br><br>
+
+<button id="openTeleport">🧭 Teleport</button><br><br>
+<button onclick="playMusic()">▶️ Play Music</button>
+<button onclick="pauseMusic()">⏸️ Pause Music</button>
+
+<div id="teleportPanel">
+  <h3>🧭 Teleport Menu</h3>
+  <button id="tpEarth">🌍 Earth</button>
+  <button id="tpMoon">🌕 Moon</button>
+  <button id="tpOrion">🌌 Orion</button>
+  <button id="tpBlackHole">🕳️ Black Hole</button>
+  <button id="tpPleiades">🌟 Pleiades</button>
+  <hr>
+  <button id="closeTeleport">❌ Close</button>
+</div>
+
+</div>    
+<div id="mobileControls">
+  <div class="pad">
+    <button data-dir="forward">▲</button>
+    <div>
+      <button data-dir="left">◀</button>
+      <button data-dir="back">▼</button>
+      <button data-dir="right">▶</button>
+    </div>
+  </div>
+
+  <div class="updown">
+    <button data-dir="up">⤒</button>
+    <button data-dir="down">⤓</button>
+  </div>
+</div>
+<!-- YouTube Player -->
+<div id="player"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/FlyControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+<!-- LOADING SCREEN -->
+<div id="loadingScreen">
+<div class="loader"></div>
+<div id="loadingText">Initializing Universe...</div>
+</div>
+
+<!-- INTRO SCREEN -->
+<div id="introScreen">
+<h1>DEEP SPACE VIEW</h1>
+<p>Explore the universe beyond imagination</p>
+<button id="startBtn">START EXPLORATION</button>
+</div>
+
+<!-- YouTube API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  // ======================
+  // YOUTUBE MUSIC
+  // ======================
+  let player;
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+      height: '0',
+      width: '0',
+      videoId: 'cOLhHTsPbDg',
+      playerVars: {
+        autoplay: 1, 
+        controls: 0,
+        loop: 1,
+        playlist: 'cOLhHTsPbDg',
+        modestbranding: 1,
+        rel: 0,
+        iv_load_policy: 3
+      }
+    });
+  }
+
+  function playMusic(){
+    if(player) player.playVideo(); // pastikan user klik tombol
+  }
+
+  function pauseMusic(){
+    if(player) player.pauseVideo();
+  }
+
+
+  const infoImage = document.getElementById('infoImage');
+  const infoPanel = document.getElementById('infoPanel');
+  const infoTitle = document.getElementById('infoTitle');
+  const infoDesc  = document.getElementById('infoDesc');
+  const infoSize  = document.getElementById('infoSize');
+  const infoType  = document.getElementById('infoType');
+
+  function showInfo(data){
+infoTitle.innerText = data.title || "Unknown Object";
+infoDesc.innerText  = "📝 " + (data.desc || "-");
+infoSize.innerText  = "📏 " + (data.size || "-");
+infoType.innerText  = "🧪 " + (data.type || "-");
+
+// 🖼️ IMAGE SUPPORT
+if(data.image){
+  infoImage.src = data.image;
+  infoImage.style.display = "block";
+}else{
+  infoImage.style.display = "none";
+}
+
+infoPanel.style.display = "block";
+}
+
+
+  function closeInfo(){
+    infoPanel.style.display = "none";
+  }
+
+  function showMobileNotice(){
+const msg = document.createElement("div");
+msg.innerText = "📱 Fitur ini hanya tersedia di PC\nMohon tunggu update selanjutnya 🙏";
+msg.style.position = "fixed";
+msg.style.bottom = "120px";
+msg.style.left = "50%";
+msg.style.transform = "translateX(-50%)";
+msg.style.background = "rgba(0,0,0,0.85)";
+msg.style.color = "#0ff";
+msg.style.padding = "12px 18px";
+msg.style.border = "1px solid #0ff";
+msg.style.borderRadius = "10px";
+msg.style.fontFamily = "monospace";
+msg.style.fontSize = "14px";
+msg.style.textAlign = "center";
+msg.style.zIndex = "2000";
+
+document.body.appendChild(msg);
+
+setTimeout(()=>{
+  msg.style.opacity = "0";
+  msg.style.transition = "opacity 0.6s";
+  setTimeout(()=> msg.remove(), 600);
+}, 2500);
+}
+
+  // ======================
+  // SCENE & CAMERA
+  // ======================
+  const scene = new THREE.Scene();
+  loadGaiaStars(scene);
+
+  // ======================
+// SOLAR SYSTEM GROUP (ECLIPTIC PLANE)
+// ======================
+const solarSystem = new THREE.Group();
+solarSystem.rotation.x = THREE.MathUtils.degToRad(7.25); // kemiringan alami tata surya
+scene.add(solarSystem);
+// ======================
+// SOLAR SYSTEM POSITION (REALISTIC)
+// ======================
+const SOLAR_DISTANCE = 4200; // jarak dari galactic center (visual scale)
+
+solarSystem.position.set(
+  SOLAR_DISTANCE,
+  120,   // sedikit di atas galactic plane
+  -800
+);
+
+  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 80000);
+  camera.position.set(0, 250, 900);
+
+  const renderer = new THREE.WebGLRenderer({ antialias:true });
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(devicePixelRatio);
+  document.body.appendChild(renderer.domElement);
+
+  renderer.domElement.style.position = "fixed";
+renderer.domElement.style.top = "0";
+renderer.domElement.style.left = "0";
+renderer.domElement.style.zIndex = "1";
+
+
+
+
+
+  // SUN LIGHT (utama)
+  const sunLight = new THREE.DirectionalLight(0xffffff, 2);
+  sunLight.position.set(500, 200, 300);
+  scene.add(sunLight);
+
+  // ambient biar gak hitam
+  const ambient = new THREE.AmbientLight(0x404040, 1.2);
+  scene.add(ambient);
+
+  // ======================
+  // CONTROLS
+  // ======================
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+
+  const flyControls = new THREE.FlyControls(camera, renderer.domElement);
+  flyControls.enabled = false;
+  flyControls.movementSpeed = 150;
+  flyControls.rollSpeed = Math.PI / 24;
+  flyControls.dragToLook = true;
+
+  let freeMode = false;
+  controls.minDistance = 1;
+controls.maxDistance = 9000; // < radius milkyWay (10000)
+function setFreeFlyMode() {
+freeMode = true;
+controls.enabled = false;
+flyControls.enabled = true;
+}
+
+function setOrbitMode() {
+freeMode = false;
+flyControls.enabled = false;
+controls.enabled = true;
+}
+
+
+  // ======================
+// MOBILE FREE FLY SETUP
+// ======================
+const moveState = {
+  forward:false,
+  back:false,
+  left:false,
+  right:false,
+  up:false,
+  down:false
+};
+
+const mobileControls = document.getElementById("mobileControls");
+
+if(isMobile){
+mobileControls.style.display = "none";
+
+document.getElementById("freeBtn").addEventListener("click", ()=>{
+  // freeMode SUDAH di-toggle oleh handler utama
+  if(freeMode){
+    mobileControls.style.display = "block";
+  }else{
+    mobileControls.style.display = "none";
+  }
+});
+}
+
+
+  document.querySelectorAll("#mobileControls button").forEach(btn=>{
+    const dir = btn.dataset.dir;
+
+    btn.addEventListener("touchstart", e=>{
+      e.preventDefault();
+      moveState[dir] = true;
+    });
+
+    btn.addEventListener("touchend", ()=>{
+      moveState[dir] = false;
+    });
+  });
+
+
+
+// ======================
+// RA / DEC TO XYZ
+// ======================
+function raDecToXYZ(ra, dec, radius){
+const raRad  = THREE.MathUtils.degToRad(ra);
+const decRad = THREE.MathUtils.degToRad(dec);
+
+return new THREE.Vector3(
+radius * Math.cos(decRad) * Math.cos(raRad),
+radius * Math.sin(decRad),
+radius * Math.cos(decRad) * Math.sin(raRad)
+);
+}
+
+const hipparcosStars = [
+  { name:"Sirius", ra:6.752, dec:-16.716, mag:-1.46 },
+  { name:"Vega", ra:18.615, dec:38.78, mag:0.03 },
+  { name:"Betelgeuse", ra:5.9195, dec:7.407, mag:0.42 },
+  { name:"Rigel", ra:5.242, dec:-8.201, mag:0.18 }
+];
+
+const skyGroup = new THREE.Group();
+scene.add(skyGroup);
+
+hipparcosStars.forEach(s=>{
+  const brightness = Math.pow(2.512, -s.mag);
+
+  const star = new THREE.Mesh(
+    new THREE.SphereGeometry(6 * brightness, 12, 12),
+    new THREE.MeshBasicMaterial({
+      color:0xffffff,
+      transparent:true,
+      opacity: Math.min(1, brightness)
+    })
+  );
+
+  const pos = raDecToXYZ(s.ra, s.dec, 6000);
+  star.position.copy(pos);
+
+  star.userData.info = {
+    title:"⭐ "+s.name,
+    desc:"Bintang katalog Hipparcos",
+    size:"Magnitude "+s.mag,
+    type:"Star"
+  };
+
+  skyGroup.add(star);
+});
+function addProceduralDisk(count = 120000){
+const g = new THREE.BufferGeometry();
+const pos = [];
+
+for(let i=0;i<count;i++){
+const r = Math.pow(Math.random(), 0.6) * 14000;
+const theta = Math.random() * Math.PI * 2;
+const y = (Math.random()-0.5) * r * 0.06;
+
+pos.push(
+  Math.cos(theta)*r,
+  y,
+  Math.sin(theta)*r
+);
+}
+
+g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+
+const m = new THREE.PointsMaterial({
+size: 1.1,
+color: 0xffffff,
+transparent: true,
+opacity: 0.12,
+depthWrite: false
+});
+
+skyGroup.add(new THREE.Points(g,m));
+}
+
+  // ======================
+  // SHOOTING STAR / METEOR
+  // ======================
+  const meteors = [];
+
+  function spawnMeteor(){
+  if(!camera) return;
+
+  // 60% oren, 40% putih
+  const isOrange = Math.random() < 0.6;
+
+  const meteor = new THREE.Mesh(
+    new THREE.SphereGeometry(2.2, 12, 12),
+    new THREE.MeshBasicMaterial({
+      color: isOrange ? 0xffa500 : 0xffffff,
+      transparent: true,
+      opacity: 0.9
+    })
+  );
+
+  const spread = 700;
+  meteor.position.set(
+    camera.position.x + (Math.random()-0.5) * spread,
+    camera.position.y + 700 + Math.random() * 300,
+    camera.position.z - 1300
+  );
+
+  meteor.userData.velocity = new THREE.Vector3(
+    (Math.random()-0.5) * 6,
+    -22 - Math.random() * 10,
+    38 + Math.random() * 15
+  );
+
+  meteor.userData.life = 0;
+  meteor.userData.isOrange = isOrange; // (optional, info)
+
+  meteors.push(meteor);
+  scene.add(meteor);
+
+  setTimeout(()=>{
+    scene.remove(meteor);
+    const i = meteors.indexOf(meteor);
+    if(i !== -1) meteors.splice(i,1);
+  }, 5000);
+}
+
+setInterval(spawnMeteor, 3000);
+
+
+
+
+
+  // ======================
+  // MILKY WAY BACKGROUND
+  // ======================
+  const loader = new THREE.TextureLoader();
+  const milkyTex = loader.load('milkyway.jpg'); // <-- ganti dengan texture Milky Way sendiri
+  milkyTex.colorSpace = THREE.SRGBColorSpace;
+
+  const milkyWay = new THREE.Mesh(
+  new THREE.SphereGeometry(10000,64,64),
+  new THREE.MeshBasicMaterial({
+    map: milkyTex,
+    side: THREE.BackSide,
+    transparent:true,
+    opacity:0.45,
+    depthWrite:false
+  })
+);
+milkyWay.rotation.x = THREE.MathUtils.degToRad(63);
+milkyWay.rotation.z = THREE.MathUtils.degToRad(15);
+skyGroup.add(milkyWay);
+
+
+// ======================
+// SAGITTARIUS A* (GALACTIC CENTER)
+// ======================
+const sagA = new THREE.Group();
+
+// Event horizon (inti)
+const sagCore = new THREE.Mesh(
+  new THREE.SphereGeometry(90, 32, 32),
+  new THREE.MeshBasicMaterial({ color: 0x000000 })
+);
+sagA.add(sagCore);
+
+// Accretion disk
+const sagDisk = new THREE.Mesh(
+  new THREE.RingGeometry(120, 260, 96),
+  new THREE.MeshBasicMaterial({
+    color: 0xffbb66,
+    transparent: true,
+    opacity: 0.45,
+    side: THREE.DoubleSide
+  })
+);
+sagDisk.rotation.x = Math.PI / 2;
+sagA.add(sagDisk);
+
+// Gravitational lens ring
+const sagLens = new THREE.Mesh(
+  new THREE.RingGeometry(280, 420, 128),
+  new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.18,
+    side: THREE.DoubleSide
+  })
+);
+sagLens.rotation.x = Math.PI / 2;
+sagA.add(sagLens);
+
+// POSISI = pusat galaksi
+sagA.position.set(0, 0, 0);
+
+sagA.userData.info = {
+  title: "🕳️ Sagittarius A*",
+  desc: "Supermassive black hole di pusat Galaksi Bima Sakti",
+  size: "Massa ±4,1 juta Matahari",
+  type: "Galactic Center Black Hole",
+  image:"https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg"
+};
+
+skyGroup.add(sagA);
+
+
+  // ======================
+  // SUN
+  // ======================
+  const sunTexture = loader.load('sunmap.jpg'); // load texture Sun
+  sunTexture.colorSpace = THREE.SRGBColorSpace;
+
+  const sun = new THREE.Mesh(
+    new THREE.SphereGeometry(40, 32, 32),
+    new THREE.MeshBasicMaterial({ map: sunTexture }) // pakai map
+  );
+
+  solarSystem.add(sun);
+  sun.userData.info = {
+    title:"☀️ Sun",
+    desc:"Bintang pusat Tata Surya",
+    size:"Diameter 1.392.700 km",
+    type:"Yellow Dwarf"
+  };
+
+  // ======================
+  // PLANETS & MOON
+  // ======================
+  const PLANETS = [
+  {name:'Mercury', size:3,  a:60,  e:0.205, speed:4.15, tex:'merkurius.jpg'},
+  {name:'Venus',   size:6,  a:90,  e:0.007, speed:1.62, tex:'venusmap.jpg'},
+  {name:'Earth',   size:6.5,a:130, e:0.017, speed:1.00, tex:'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg'},
+  {name:'Mars',    size:4.5,a:170, e:0.093, speed:0.53, tex:'mars.jpg'},
+  {name:'Jupiter', size:14, a:230, e:0.049, speed:0.084, tex:'jupitermap.jpg'},
+  {name:'Saturn',  size:12, a:300, e:0.056, speed:0.034, tex:'saturnmap.jpg'},
+  {name:'Uranus',  size:10, a:370, e:0.046, speed:0.012, tex:'uranusmap.jpg'},
+  {name:'Neptune', size:10, a:430, e:0.009, speed:0.006, tex:'neptunemap.jpg'}
+  ];
+
+  const planets = [];
+  let earthMesh;
+
+  PLANETS.forEach(p=>{
+    let mat = p.tex ? new THREE.MeshBasicMaterial({ map: loader.load(p.tex) }) : new THREE.MeshBasicMaterial({ color:p.color });
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(p.size,48,48), mat);
+    mesh.userData = {
+    ...p,
+    angle: Math.random() * Math.PI * 2,
+    info: {
+      title: "🪐 " + p.name,
+      desc: `Planet ${p.name} di Tata Surya`,
+      size: `Radius visual: ${p.size}`,
+      type: "Planet"
+    }
+  };
+    solarSystem.add(mesh);
+    planets.push(mesh);
+    if(p.name === 'Earth'){
+    earthMesh = mesh;
+    earthMesh.userData.info = {
+      title:"🌍 Earth",
+      desc:"Planet layak huni",
+      size:"Diameter 12.742 km",
+      type:"Terrestrial"
+    };
+  }
+
+    if(p.name==='Saturn'){
+      const ring = new THREE.Mesh(new THREE.RingGeometry(p.size+4,p.size+14,64),
+        new THREE.MeshBasicMaterial({ color:0xccaa66, side:THREE.DoubleSide, transparent:true, opacity:0.8 }));
+      ring.rotation.x = Math.PI/2;
+      mesh.add(ring);
+    }
+
+
+  });
+
+  // MOON
+  const moonTex = loader.load('https://threejs.org/examples/textures/planets/moon_1024.jpg');
+  moonTex.colorSpace = THREE.SRGBColorSpace;
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(1.8,32,32), new THREE.MeshBasicMaterial({ map:moonTex }));
+  earthMesh.add(moon);
+  moon.position.x = 15;
+  moon.userData = { angle:0 };
+  moon.userData.info = {
+    title: "🌕 Moon",
+    desc: "Satelit alami Bumi",
+    size: "Diameter 3.474 km",
+    type: "Natural Satellite"
+  };
+
+
+// ======================
+// PLEIADES (M45)
+// ======================
+const pleiades = new THREE.Group();
+
+const pleiadesStars = [
+  { name: "Alcyone", x: 0, y: 0, z: 0 },
+  { name: "Maia", x: 80, y: 30, z: -40 },
+  { name: "Electra", x: -60, y: 20, z: 50 },
+  { name: "Taygeta", x: 40, y: -20, z: 60 },
+  { name: "Celaeno", x: -90, y: -10, z: -30 },
+  { name: "Merope", x: 20, y: 10, z: -80 },
+  { name: "Asterope", x: -30, y: 40, z: 20 }
+];
+
+pleiadesStars.forEach(s => {
+  const star = new THREE.Mesh(
+    new THREE.SphereGeometry(18, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0x99ccff })
+  );
+  
+star.position.set(s.x, s.y, s.z);
+
+
+  star.userData.info = {
+    title: "🌟 " + s.name,
+    desc: "Bintang dalam gugus terbuka Pleiades (M45)",
+    size: "Bintang muda panas",
+    type: "Blue-hot star cluster"
+  };
+
+  pleiades.add(star);
+});
+
+placeDeepObject(pleiades, 3800);
+pleiades.rotation.x = THREE.MathUtils.degToRad(24);
+skyGroup.add(pleiades);
+
+
+
+
+// ======================
+// ORION CONSTELLATION (Scientific)
+// ======================
+const orion = new THREE.Group();
+
+const orionStars = [
+  {
+    name: 'Betelgeuse (α Orionis)',
+    x: -50, y: 100, z: -100,
+    size: 22,
+    color: 0xffaa33,
+    info: {
+      title: "⭐ Betelgeuse",
+      desc: "Bintang supergiant merah, mendekati akhir hidupnya",
+      size: "Radius ±764× Matahari",
+      type: "Red Supergiant (M1–M2 Ia-ab)"
+    }
+  },
+  {
+    name: 'Rigel (β Orionis)',
+    x: 40, y: 10, z: -210,
+    size: 20,
+    color: 0x88ccff,
+    info: {
+      title: "⭐ Rigel",
+      desc: "Bintang supergiant biru-putih, sangat terang",
+      size: "Radius ±79× Matahari",
+      type: "Blue Supergiant (B8 Ia)"
+    }
+  },
+  {
+    name: 'Bellatrix (γ Orionis)',
+    x: 50, y: 80, z: -120,
+    size: 16,
+    color: 0xffffff,
+    info: {
+      title: "⭐ Bellatrix",
+      desc: "Bintang raksasa biru",
+      size: "Radius ±6× Matahari",
+      type: "Blue Giant (B2 III)"
+    }
+  },
+  {
+    name: 'Alnitak (ζ Orionis)',
+    x: -30, y: 50, z: -160,
+    size: 13,
+    color: 0x99ccff,
+    info: {
+      title: "⭐ Alnitak",
+      desc: "Salah satu bintang sabuk Orion",
+      size: "Radius ±20× Matahari",
+      type: "Blue Supergiant (O9.5 Ib)"
+    }
+  },
+  {
+    name: 'Alnilam (ε Orionis)',
+    x: -10, y: 60, z: -150,
+    size: 13,
+    color: 0x99ccff,
+    info: {
+      title: "⭐ Alnilam",
+      desc: "Bintang paling terang di sabuk Orion",
+      size: "Radius ±42× Matahari",
+      type: "Blue Supergiant (B0 Ia)"
+    }
+  },
+  {
+    name: 'Mintaka (δ Orionis)',
+    x: 10, y: 55, z: -155,
+    size: 13,
+    color: 0x99ccff,
+    info: {
+      title: "⭐ Mintaka",
+      desc: "Sistem bintang multi di sabuk Orion",
+      size: "Multi-star system",
+      type: "O-type binary system"
+    }
+  }
+];
+
+orionStars.forEach(b => {
+  const star = new THREE.Mesh(
+    new THREE.SphereGeometry(b.size, 16, 16),
+    new THREE.MeshBasicMaterial({ color: b.color })
+  );
+placeDeepObject(star, 4500);
+  star.userData.info = b.info;
+  orion.add(star);
+});
+
+placeDeepObject(orion, 4000);
+orion.rotation.x = THREE.MathUtils.degToRad(23.4);
+skyGroup.add(orion);
+
+
+  const blackHole = new THREE.Mesh(new THREE.SphereGeometry(140,32,32), new THREE.MeshBasicMaterial({ color:0x000000 }));
+placeDeepObject(blackHole, 5200);
+skyGroup.add(blackHole);
+  blackHole.userData.info = {
+    title:"🕳️ Black Hole",
+    desc:"Gravitasi ekstrem",
+    size:"Event Horizon",
+    type:"Singularity"
+  };
+
+  const disk = new THREE.Mesh(new THREE.RingGeometry(160,300,64), new THREE.MeshBasicMaterial({ color:0xffaa00, side:THREE.DoubleSide, transparent:true, opacity:0.4 }));
+  disk.rotation.x = Math.PI/2;
+  blackHole.add(disk);
+  // ===== GRAVITATIONAL LENSING EFFECT =====
+  const lensRing = new THREE.Mesh(
+    new THREE.RingGeometry(310, 420, 128),
+    new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.15,
+      side: THREE.DoubleSide
+    })
+  );
+  lensRing.rotation.x = Math.PI / 2;
+  blackHole.add(lensRing);
+
+// Sabuk Asteroid (diperbaiki)
+const asteroidGroup = new THREE.Group();
+for(let i=0; i<300; i++){
+  const a = 180 + Math.random()*40; // radius orbit antara 180-220
+  const angle = Math.random()*Math.PI*2;
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(0.3+Math.random()*1.2, 6, 6), // lebih kecil biar proporsional
+    new THREE.MeshBasicMaterial({ color:0x888888 })
+  );
+  mesh.position.set(
+    Math.cos(angle)*a,
+    (Math.random()-0.5)*8, // variasi tinggi ±4
+    Math.sin(angle)*a
+  );
+  asteroidGroup.add(mesh);
+}
+solarSystem.add(asteroidGroup);
+
+
+
+  // ======================
+  // DEEP SPACE STARS
+  // ======================
+
+  const deepStars = [
+// ===== GALACTIC CORE REGION =====
+{ name:"S2", x:120, y:-40, z:80, size:10, color:0xffffff },
+{ name:"S62", x:-90, y:60, z:-30, size:8, color:0xffffff },
+{ name:"IRS 16C", x:200, y:150, z:-100, size:14, color:0xfff0cc },
+{ name:"IRS 13E", x:-180, y:90, z:130, size:12, color:0xffeedd },
+{ name:"S4711", x:70, y:-120, z:60, size:7, color:0xffffff },
+
+// ===== INNER MILKY WAY =====
+{ name:"Arcturus", x:3200, y:-1800, z:900, size:22, color:0xffcc99 },
+{ name:"Aldebaran", x:4100, y:2200, z:-1200, size:24, color:0xffaa77 },
+{ name:"Antares", x:5200, y:-900, z:-2400, size:28, color:0xff5533 },
+{ name:"Spica", x:4800, y:1600, z:2100, size:21, color:0xbbeeff },
+{ name:"Fomalhaut", x:5600, y:-2600, z:1800, size:20, color:0xffffff },
+{ name:"Regulus", x:4300, y:900, z:-1700, size:19, color:0xffffff },
+
+// ===== ORION REGION (PENGGANTI TOTAL) =====
+{ name:"Meissa", x:6200, y:1400, z:-1200, size:22, color:0xbbccff },
+{ name:"Propus (Eta Geminorum)", x:6400, y:1650, z:600, size:24, color:0xffaa77 },
+{ name:"Bellatrix Minor", x:6600, y:1900, z:-300, size:20, color:0xccccff },
+
+// ===== LOCAL ARM =====
+{ name:"Sirius", x:8200, y:200, z:-300, size:25, color:0xffffff },
+{ name:"Procyon", x:8300, y:500, z:200, size:20, color:0xffffdd },
+{ name:"Vega", x:9000, y:1100, z:3200, size:22, color:0x99ccff },
+{ name:"Altair", x:8800, y:-900, z:2100, size:18, color:0xffffff },
+{ name:"Deneb", x:10200, y:3000, z:5400, size:32, color:0xccccff },
+{ name:"Epsilon Eridani", x:7800, y:-400, z:900, size:15, color:0xffffcc },
+{ name:"Tau Ceti", x:7600, y:300, z:-800, size:14, color:0xffffaa },
+{ name:"Kapella", x:9500, y:2200, z:-1200, size:27, color:0xffeecc },
+{ name:"Castor", x:9100, y:1500, z:-900, size:19, color:0xffffff },
+{ name:"Pollux", x:9300, y:1700, z:-1100, size:21, color:0xffcc99 },
+
+// ===== HALO STARS =====
+{ name:"Kapteyn’s Star", x:-12000, y:4000, z:-6000, size:14, color:0xffaa77 },
+{ name:"Luyten 726-8", x:-8800, y:-2600, z:1800, size:11, color:0xff6633 },
+{ name:"HD 140283 (Methuselah)", x:-15000, y:7000, z:-8000, size:13, color:0xffffcc },
+{ name:"Groombridge 1830", x:-13000, y:5000, z:3000, size:11, color:0xffccaa },
+
+// ===== MASSIVE / EXOTIC STARS =====
+{ name:"Eta Carinae", x:7400, y:-2800, z:-3300, size:35, color:0xffaa66 },
+{ name:"WR 104", x:6800, y:3100, z:-2600, size:29, color:0xffccaa },
+{ name:"Pistol Star", x:400, y:300, z:-200, size:34, color:0xffddaa },
+// ===== BRIGHT GALACTIC DISK STARS =====
+{ name:"Achernar", x:8700, y:-3900, z:-1800, size:29, color:0x99ccff },
+{ name:"Canopus", x:9100, y:-4200, z:1200, size:31, color:0xffeecc },
+{ name:"Hadar", x:9400, y:-3600, z:-2600, size:28, color:0xbbeeff },
+{ name:"Acrux", x:9600, y:-3400, z:800, size:26, color:0xbbddff },
+{ name:"Mimosa", x:9550, y:-3300, z:-1400, size:27, color:0xbbccff },
+{ name:"Gacrux", x:9200, y:-3000, z:2100, size:25, color:0xffaa77 },
+
+
+// ===== NEARBY (BUT NOT FORBIDDEN ONES) =====
+{ name:"Lalande 21185", x:7900, y:-180, z:140, size:12, color:0xff6633 },
+{ name:"Ross 154", x:8000, y:-240, z:-200, size:11, color:0xff5522 },
+{ name:"Gliese 581", x:8150, y:260, z:180, size:12, color:0xff7744 },
+{ name:"Gliese 667 C", x:8250, y:300, z:-120, size:12, color:0xff6644 },
+
+// ===== SOLAR-TYPE STARS =====
+{ name:"61 Cygni A", x:7700, y:-350, z:250, size:15, color:0xffcc99 },
+{ name:"61 Cygni B", x:7720, y:-330, z:270, size:14, color:0xffbb88 },
+{ name:"Chi Draconis", x:8400, y:900, z:600, size:16, color:0xffffdd },
+{ name:"Sigma Draconis", x:8600, y:700, z:400, size:15, color:0xffffcc },
+
+// ===== GIANTS & SUPERGIANTS (NON-ORION) =====
+{ name:"R Doradus", x:4800, y:-2600, z:-900, size:30, color:0xff5533 },
+{ name:"Mu Cephei", x:6100, y:2900, z:3400, size:33, color:0xff4422 },
+{ name:"VV Cephei", x:7000, y:3300, z:4100, size:36, color:0xff3311 },
+{ name:"S Doradus", x:8200, y:-3500, z:-4200, size:34, color:0xffaa66 },
+{ name:"VY Canis Majoris", x:5400, y:-4100, z:1200, size:38, color:0xff2200 },
+
+// ===== OUTER DISK =====
+{ name:"Gamma Velorum", x:11000, y:-4800, z:900, size:30, color:0xffccaa },
+{ name:"Zeta Puppis", x:10800, y:-5200, z:-1700, size:29, color:0xaaddff },
+{ name:"Naos", x:11500, y:-5500, z:2400, size:31, color:0xbbddff },
+{ name:"Wezen", x:11200, y:-4600, z:-3200, size:30, color:0xffddaa },
+
+
+// ===== OLD / HALO POPULATION =====
+{ name:"BD+17°3248", x:-16000, y:8200, z:-7400, size:12, color:0xffffcc },
+{ name:"HD 140283 (Methuselah)", x:-15000, y:7000, z:-10500, size:13, color:0xffffcc },
+{ name:"HE 1523-0901", x:-18000, y:9500, z:9800, size:11, color:0xffffaa },
+{ name:"CS 22892-052", x:-17000, y:8800, z:-7600, size:12, color:0xffeecc },
+
+
+// ===== MASSIVE CLUSTER STARS =====
+{ name:"R136a1", x:14000, y:-6200, z:-5100, size:40, color:0xffffff },
+{ name:"R136a2", x:14100, y:-6150, z:-5050, size:38, color:0xffffff },
+{ name:"NGC 3603-A1", x:12500, y:5800, z:4700, size:37, color:0xffffff },
+{ name:"WR 25", x:11800, y:-5000, z:-4300, size:32, color:0xffccaa },
+// ===== EXTENDED GALACTIC DISK =====
+{ name:"Alpheratz", x:9800, y:2200, z:1200, size:23, color:0xbbeeff },
+{ name:"Mirach", x:9600, y:2400, z:1400, size:24, color:0xffaa77 },
+{ name:"Enif", x:10100, y:1800, z:-900, size:26, color:0xffcc99 },
+{ name:"Markab", x:9900, y:1600, z:-1100, size:22, color:0xffffff },
+{ name:"Sadalmelik", x:10400, y:2600, z:1900, size:25, color:0xffffcc },
+
+// ===== SOUTHERN SKY =====
+{ name:"Alpha Pavonis", x:9200, y:-4800, z:-3600, size:24, color:0xbbeeff },
+{ name:"Beta Hydri", x:8800, y:-5200, z:-3900, size:21, color:0xffffcc },
+{ name:"Gamma Tucanae", x:9100, y:-5500, z:-4200, size:22, color:0xffffff },
+
+// ===== OLD DISK / THICK DISK =====
+{ name:"HD 84937", x:-11000, y:5200, z:-4300, size:13, color:0xffffcc },
+{ name:"HD 19445", x:-10500, y:4900, z:-4100, size:13, color:0xffffdd },
+{ name:"HD 94028", x:-9800, y:4600, z:-3800, size:14, color:0xffffaa },
+
+// ===== MASSIVE CLUSTERS =====
+{ name:"NGC 6611-205", x:6200, y:-2800, z:-900, size:30, color:0xffffff },
+{ name:"NGC 6611-367", x:6400, y:-3000, z:400, size:29, color:0xffffff },
+{ name:"Westerlund 1-26", x:7200, y:-3300, z:-2200, size:37, color:0xff3322 },
+
+
+// ===== GALACTIC BULGE =====
+{ name:"OGLE-TR-56", x:900, y:-400, z:300, size:15, color:0xffffcc },
+{ name:"OGLE-2005-BLG-390", x:1100, y:-600, z:500, size:14, color:0xffffaa },
+
+// ===== RARE OBJECTS (STARS ONLY) =====
+{ name:"UY Scuti", x:6800, y:-2900, z:-2100, size:40, color:0xff2200 },
+{ name:"RW Cephei", x:6600, y:3100, z:3800, size:35, color:0xff4422 },
+{ name:"IRC +10420", x:5900, y:2700, z:3400, size:34, color:0xffaa66 } ,
+];
+const GALAXY_OFFSET_X = 7000; // titik tengah data kamu
+
+const starMap = {};
+deepStars.forEach(b => {
+const star = new THREE.Mesh(
+new THREE.SphereGeometry(b.size, 16, 16),
+new THREE.MeshBasicMaterial({ color: b.color })
+);
+
+star.position.set(b.x - GALAXY_OFFSET_X, b.y, b.z);
+
+// 🔥 SIMPAN POSISI GALAKSI ASLI
+star.userData.galaxyX = b.x - GALAXY_OFFSET_X;
+star.userData.galaxyY = b.y;
+star.userData.galaxyZ = b.z;
+
+skyGroup.add(star);
+starMap[b.name] = star;
+
+
+starMap[b.name] = star; // 🔥 SIMPAN
+
+star.userData.info = {
+title: "⭐ " + b.name,
+desc: "Bintang luar Tata Surya",
+size: "Ukuran visual",
+type: "Star"
+};
+});  
+
+const deepPlanets = [
+
+// ===== VEGA =====
+{ name:"Vega b", host:"Vega", orbitRadius:35, size:4, color:0x66ccff, type:"Super-Earth" },
+{ name:"Vega c", host:"Vega", orbitRadius:55, size:3, color:0x99ffcc, type:"Rocky" },
+{ name:"Vega d", host:"Vega", orbitRadius:80, size:5, color:0xffbb66, type:"Gas Giant" },
+{ name:"Vega e", host:"Vega", orbitRadius:110, size:3, color:0xcccccc, type:"Rocky" },
+
+// ===== SIRIUS =====
+{ name:"Sirius Ab", host:"Sirius", orbitRadius:40, size:5, color:0xffcc88, type:"Gas Giant" },
+{ name:"Sirius Ac", host:"Sirius", orbitRadius:65, size:3, color:0xcccccc, type:"Rocky" },
+
+// ===== TAU CETI =====
+{ name:"Tau Ceti e", host:"Tau Ceti", orbitRadius:35, size:4, color:0x88ccff, type:"Super-Earth" },
+{ name:"Tau Ceti f", host:"Tau Ceti", orbitRadius:60, size:3, color:0x99aa88, type:"Rocky" },
+{ name:"Tau Ceti g", host:"Tau Ceti", orbitRadius:95, size:5, color:0xffaa66, type:"Gas Giant" },
+
+// ===== EPSILON ERIDANI =====
+{ name:"Epsilon Eridani b", host:"Epsilon Eridani", orbitRadius:70, size:5, color:0xffbb77, type:"Gas Giant" },
+{ name:"Epsilon Eridani c", host:"Epsilon Eridani", orbitRadius:45, size:3, color:0xcccc99, type:"Rocky" },
+
+// ===== PROCYON =====
+{ name:"Procyon b", host:"Procyon", orbitRadius:55, size:4, color:0x88bbff, type:"Ice Giant" },
+
+// ===== DENEB =====
+{ name:"Deneb I", host:"Deneb", orbitRadius:120, size:6, color:0xffaa88, type:"Gas Giant" },
+{ name:"Deneb II", host:"Deneb", orbitRadius:80, size:4, color:0xcccccc, type:"Rocky" },
+
+// ===== ALTAIR =====
+{ name:"Altair b", host:"Altair", orbitRadius:45, size:3, color:0x999999, type:"Rocky" },
+
+// ===== ARCTURUS =====
+{ name:"Arcturus I", host:"Arcturus", orbitRadius:90, size:4, color:0xffccaa, type:"Super-Earth" },
+{ name:"Arcturus II", host:"Arcturus", orbitRadius:140, size:5, color:0xffaa66, type:"Gas Giant" },
+
+// ===== ANTARES =====
+{ name:"Antares b", host:"Antares", orbitRadius:180, size:6, color:0xff8844, type:"Gas Giant" },
+
+// ===== FOMALHAUT =====
+{ name:"Fomalhaut b", host:"Fomalhaut", orbitRadius:130, size:4, color:0xccccff, type:"Ice Giant" },
+{ name:"Fomalhaut c", host:"Fomalhaut", orbitRadius:70, size:3, color:0x999999, type:"Rocky" },
+
+// ===== TRAPPIST-1 =====
+{ name:"TRAPPIST-1 b", host:"TRAPPIST-1", orbitRadius:15, size:2.5, color:0x888888, type:"Rocky" },
+{ name:"TRAPPIST-1 c", host:"TRAPPIST-1", orbitRadius:22, size:2.5, color:0x999999, type:"Rocky" },
+{ name:"TRAPPIST-1 d", host:"TRAPPIST-1", orbitRadius:30, size:3, color:0x88aa99, type:"Rocky" },
+
+// ===== KEPLER =====
+{ name:"Kepler-62 e", host:"Kepler-62", orbitRadius:60, size:4, color:0x66cc99, type:"Habitable" },
+{ name:"Kepler-62 f", host:"Kepler-62", orbitRadius:85, size:4, color:0x88ccff, type:"Ice Earth" },
+{ name:"Kepler-186 f", host:"Kepler-186", orbitRadius:75, size:4, color:0x66cc88, type:"Habitable" },
+{ name:"Kepler-452 b", host:"Kepler-452", orbitRadius:110, size:5, color:0x88cc99, type:"Super-Earth" }
+
+
+];
+deepPlanets.forEach(p => {
+const hostStar = starMap[p.host];
+if (!hostStar) return;
+
+const planet = new THREE.Mesh(
+new THREE.SphereGeometry(p.size, 16, 16),
+new THREE.MeshStandardMaterial({ color: p.color })
+);
+
+// ✅ RELATIF TERHADAP POSISI BINTANG
+planet.position.set(
+(p.x - GALAXY_OFFSET_X) - hostStar.userData.galaxyX,
+p.y - hostStar.userData.galaxyY,
+p.z - hostStar.userData.galaxyZ
+);
+
+hostStar.add(planet);
+
+planet.userData.info = {
+title: "🪐 " + p.name,
+desc: "Planet luar Tata Surya",
+type: p.type,
+host: p.host
+};
+});
+
+  
+// ======================
+// SCIENTIFIC PULSARS
+// ======================
+const pulsars = [
+  {
+    name: 'Crab Pulsar (PSR B0531+21)',
+    x: 2000, y: 150, z: -3000,
+    size: 10,
+    color: 0x88ccff,
+    info: {
+      title: "⚡ Crab Pulsar",
+      desc: "Sisa supernova tahun 1054",
+      size: "Diameter ±20 km",
+      type: "Neutron Star (30 rotasi/detik)"
+    }
+  },
+  {
+    name: 'PSR J0437−4715',
+    x: -1800, y: 100, z: -2500,
+    size: 8,
+    color: 0x99ccff,
+    info: {
+      title: "⚡ PSR J0437−4715",
+      desc: "Pulsar terdekat dari Bumi",
+      size: "Diameter ±24 km",
+      type: "Millisecond Pulsar"
+    }
+  },
+  {
+    name: 'PSR B1937+21',
+    x: 1000, y: 200, z: -2000,
+    size: 9,
+    color: 0x55aaff,
+    info: {
+      title: "⚡ PSR B1937+21",
+      desc: "Pulsar tercepat yang diketahui",
+      size: "Rotasi 641×/detik",
+      type: "Millisecond Neutron Star"
+    }
+  }
+];
+
+pulsars.forEach(p => {
+  const star = new THREE.Mesh(
+    new THREE.SphereGeometry(p.size, 16, 16),
+    new THREE.MeshBasicMaterial({
+      color: p.color,
+      transparent: true
+    })
+  );
+placeDeepObject(star, 4800);
+  star.userData.pulse = Math.random() * 0.05 + 0.95;
+  star.userData.info = p.info;
+  skyGroup.add(star);
+});
+
+
+  // ======================
+  // NEBULA FIXED (tidak ngadep player)
+  // ======================
+  const nebulas = [
+    { name: 'Helix', x: -2000, y: 200, z: -3000, size: 600, texture: 'helix2.png' },
+    { name: 'Eagle', x: 1800, y: 400, z: -2500, size: 500, texture: 'eagle1.png' },
+    { name: 'Crab', x: 2500, y: 300, z: -3500, size: 550, texture: 'crab1.png' }
+  ];
+
+  nebulas.forEach(n => {
+    const tex = loader.load(n.texture);
+    tex.colorSpace = THREE.SRGBColorSpace;
+
+    const geometry = new THREE.PlaneGeometry(n.size, n.size);
+    const material = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 0.8,
+      side: THREE.DoubleSide
+    });
+    
+    const nebula = new THREE.Mesh(geometry, material);
+placeDeepObject(nebula, 6000);
+nebula.lookAt(0,0,0);
+nebula.rotateZ(Math.random()*Math.PI);
+skyGroup.add(nebula);
+    nebula.userData.info = {
+    title: "🌫️ " + n.name + " Nebula",
+    desc: "Awan gas dan debu kosmik",
+    size: "Skala ratusan tahun cahaya",
+    type: "Nebula"
+  };
+
+  });
+
+  // ======================
+  // ISS 3D MODEL
+  // ======================
+  const gltfLoader = new THREE.GLTFLoader();
+  let issModel;
+  let issAngle = 0;
+
+  gltfLoader.load(
+    'iss.glb',
+    gltf => {
+      issModel = gltf.scene;
+      issModel.scale.set(0.0006, 0.0006, 0.0006);
+      issModel.position.set(12, 2, 0);
+
+      issModel.userData.info = {
+        title: "🛰️ ISS",
+        desc: "International Space Station",
+        size: "109 × 73 meter",
+        type: "Artificial Satellite"
+      };
+
+      earthMesh.add(issModel);
+    }  
+  );
+  const extraStars = [
+  { name:'Alpha Centauri A', x:700, y:150, z:-1800, size:22, color:0xffeecc },
+  { name:'Alpha Centauri B', x:730, y:140, z:-1820, size:18, color:0xffccaa },
+  { name:'Barnard Star', x:-900, y:200, z:-2000, size:12, color:0xffaa77 },
+  { name:'Wolf 359', x:-1200, y:100, z:-2200, size:10, color:0xff8888 }
+];
+
+extraStars.forEach(b => {
+  const star = new THREE.Mesh(
+    new THREE.SphereGeometry(b.size, 16, 16),
+    new THREE.MeshBasicMaterial({ color:b.color })
+  );
+placeDeepObject(star, 4500);
+  star.userData.info = {
+    title:"⭐ "+b.name,
+    desc:"Bintang di luar Tata Surya",
+    size:"Radius visual: "+b.size,
+    type:"Star"
+  };
+  skyGroup.add(star);
+});
+
+
+
+hipparcosStars.forEach(s=>{
+const star = new THREE.Mesh(
+  new THREE.SphereGeometry(6,12,12),
+  new THREE.MeshBasicMaterial({ color:0xffffff })
+);
+const pos = raDecToXYZ(s.ra, s.dec, 5000); // radius 5000–5500
+star.position.copy(pos);
+scene.add(star);
+});
+
+// ======================
+// DEEP SPACE DISTRIBUTION
+// ======================
+function placeDeepObject(obj, radius){
+  const theta = Math.random() * Math.PI * 2;
+
+  // Galactic plane → Y kecil
+  const y = (Math.random() - 0.5) * radius * 0.15;
+
+  obj.position.set(
+    Math.cos(theta) * radius,
+    y,
+    Math.sin(theta) * radius
+  );
+}
+
+
+
+  // UI & TELEPORT
+  let timeScale = 1;
+  document.getElementById('timeScale').oninput = e => timeScale = parseFloat(e.target.value);
+  document.getElementById('telescopeBtn').onclick = ()=> { camera.fov = camera.fov===60 ? 12 : 60; camera.updateProjectionMatrix(); };
+  document.getElementById("freeBtn").onclick = ()=>{
+// 📱 JIKA MOBILE → TOLAK & TAMPILKAN PESAN
+if(isMobile){
+  showMobileNotice();
+  return;
+}
+
+// 🖥️ JIKA PC → NORMAL FREE FLY
+freeMode = !freeMode;
+controls.enabled = !freeMode;
+flyControls.enabled = freeMode;
+};
+
+  let warpActive = false;
+  let warpPower = 0;
+  function teleportTo(target, offset = new THREE.Vector3(0,0,500)){
+  warpActive = true;
+  warpPower = 1;
+
+  const warpSteps = 25;
+  const startPos = camera.position.clone();
+
+  // ✅ AMBIL WORLD POSITION (INI KUNCI)
+  const worldPos = new THREE.Vector3();
+  target.getWorldPosition(worldPos);
+
+  // arah kamera → target
+  const dir = new THREE.Vector3()
+    .subVectors(camera.position, worldPos)
+    .normalize();
+
+  const endPos = worldPos.clone().add(dir.multiplyScalar(offset.length()));
+
+  let step = 0;
+
+  function warpAnim(){
+    step++;
+    camera.position.lerpVectors(startPos, endPos, step / warpSteps);
+    warpPower = 1 - step / warpSteps;
+
+    if(step < warpSteps){
+      requestAnimationFrame(warpAnim);
+    }else{
+      controls.target.copy(worldPos);
+      warpActive = false;
+    }
+  }
+
+  warpAnim();
+  camera.lookAt(worldPos);
+}
+
+
+// ======================
+// TELEPORT PANEL UI
+// ======================
+const teleportPanel = document.getElementById("teleportPanel");
+
+document.getElementById("openTeleport").onclick = ()=>{
+  teleportPanel.style.left = "0";
+};
+
+document.getElementById("closeTeleport").onclick = ()=>{
+  teleportPanel.style.left = "-260px";
+};
+
+// TELEPORT ACTIONS
+document.getElementById("tpEarth").onclick = ()=>{
+  teleportTo(earthMesh, new THREE.Vector3(0,0,30));
+};
+
+document.getElementById("tpMoon").onclick = ()=>{
+  teleportTo(moon, new THREE.Vector3(0,0,10));
+};
+
+document.getElementById("tpOrion").onclick = ()=>{
+  teleportTo(orion, new THREE.Vector3(0,500,1000));
+};
+
+document.getElementById("tpBlackHole").onclick = ()=>{
+  teleportTo(blackHole, new THREE.Vector3(0,300,1000));
+};
+
+document.getElementById("tpPleiades").onclick = ()=>{
+  teleportTo(pleiades, new THREE.Vector3(0,100,500));
+};
+
+
+  function animate(){
+  requestAnimationFrame(animate);
+
+
+
+  // update planet
+  planets.forEach(p=>{
+    p.userData.angle += p.userData.speed*0.001*timeScale;
+    const r = (p.userData.a*(1-p.userData.e**2)) / (1+p.userData.e*Math.cos(p.userData.angle));
+p.position.set(
+  Math.cos(p.userData.angle) * r,
+  Math.sin(p.userData.angle * 0.5) * 8, // variasi Y alami
+  Math.sin(p.userData.angle) * r
+);
+    if(p.userData.label){
+      const vector = new THREE.Vector3();
+      p.getWorldPosition(vector);
+      vector.project(camera);
+      const x = (vector.x * 0.5 + 0.5) * innerWidth;
+      const y = (-vector.y * 0.5 + 0.5) * innerHeight;
+      p.userData.label.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
+    }
+  });
+
+  // update moon
+  moon.userData.angle += 0.02*timeScale;
+  moon.position.x = Math.cos(moon.userData.angle)*15;
+  moon.position.z = Math.sin(moon.userData.angle)*15;
+
+  // Sagittarius A* dynamics
+sagDisk.rotation.z += 0.004 * timeScale;
+sagLens.rotation.z -= 0.002 * timeScale;
+
+
+  // update pulsars (kedip)
+  skyGroup.children.forEach(obj => {
+    if(obj.userData && obj.userData.pulse){
+      obj.material.opacity = 0.7 + 0.3 * Math.sin(Date.now()*0.005 + obj.userData.angle || 0);
+    }
+  });
+
+  // controls
+  if(!isMobile && freeMode){
+  flyControls.update(0.02);
+}else{
+  controls.update();
+}
+  meteors.forEach(m=>{
+    m.position.add(m.userData.velocity);
+  });
+  if(issModel){
+    issAngle += 0.01;
+    issModel.position.set(
+      Math.cos(issAngle) * 18,
+      2,
+      Math.sin(issAngle) * 18
+    );
+    issModel.rotation.y += 0.01;
+  }
+
+  const d = camera.position.distanceTo(blackHole.position);
+
+  if(d < 1200){
+    const s = (1200 - d) / 1200;
+
+    lensRing.rotation.z += 0.02 + s*0.08;
+    lensRing.scale.setScalar(1 + s*0.8);
+    lensRing.material.opacity = 0.2 + s*0.5;
+
+    disk.rotation.z += 0.03 + s*0.1;
+
+    lensRing.scale.setScalar(1 + s*1.2);
+disk.scale.setScalar(1 + s*0.6);
+  }else{
+    lensRing.material.opacity *= 0.96;
+  }
+
+  meteors.forEach(m => {
+  m.position.add(m.userData.velocity);
+
+  // fade out natural
+  m.userData.life += 0.02;
+  m.material.opacity = Math.max(0, 0.9 - m.userData.life);
+});
+skyGroup.rotation.y += SIDEREAL_SPEED * timeScale;
+sagA.rotation.y -= SIDEREAL_SPEED * timeScale * 0.4;
+
+// ==========================
+// MOBILE FREE FLY MOVEMENT
+// ==========================
+if(isMobile && freeMode){
+  const speed = 0.6 * timeScale;
+
+  const dir = new THREE.Vector3();
+  camera.getWorldDirection(dir);
+
+  const right = new THREE.Vector3();
+  right.crossVectors(dir, camera.up).normalize();
+
+  if(moveState.forward) camera.position.add(dir.clone().multiplyScalar(speed));
+  if(moveState.back)    camera.position.add(dir.clone().multiplyScalar(-speed));
+  if(moveState.left)    camera.position.add(right.clone().multiplyScalar(-speed));
+  if(moveState.right)   camera.position.add(right.clone().multiplyScalar(speed));
+  if(moveState.up)      camera.position.y += speed;
+  if(moveState.down)    camera.position.y -= speed;
+}
+
+
+  renderer.render(scene,camera);
+  }
+
+  const SIDEREAL_SPEED = 0.0000729; // rad/frame (simulasi)
+
+  animate();
+  // ===== ADD FEATURE D : CLICK OBJECT INFO =====
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  window.addEventListener('dblclick', (e) => {
+
+mouse.x = (e.clientX / innerWidth) * 2 - 1;
+mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+
+raycaster.setFromCamera(mouse, camera);
+
+const hits = raycaster.intersectObjects(scene.children, true);
+if(!hits.length) return;
+
+let target = hits[0].object;
+while(target && !target.userData.info){
+  target = target.parent;
+}
+
+if(target && target.userData.info){
+  showInfo(target.userData.info); // ✅ INFO SAJA
+}
+});
+
+
+
+  // ===== ADD FEATURE F : BLACK HOLE WARP =====
+  function blackHoleWarp(){
+    const d = camera.position.distanceTo(blackHole.position);
+    if(d < 900){
+      camera.fov = 60 + (900-d)*0.03;
+      camera.updateProjectionMatrix();
+    }
+  }
+
+  // ======================
+// GAIA DR3 STAR LOADER
+// ======================
+const gaiaGroup = new THREE.Group();
+scene.add(gaiaGroup);
+function createStarSprite(size){
+const canvas = document.createElement("canvas");
+canvas.width = canvas.height = 64;
+const ctx = canvas.getContext("2d");
+
+const g = ctx.createRadialGradient(32,32,2,32,32,32);
+g.addColorStop(0,"rgba(255,255,255,1)");
+g.addColorStop(0.4,"rgba(255,255,255,0.9)");
+g.addColorStop(1,"rgba(255,255,255,0)");
+
+ctx.fillStyle = g;
+ctx.fillRect(0,0,64,64);
+
+const tex = new THREE.CanvasTexture(canvas);
+
+return new THREE.Sprite(
+new THREE.SpriteMaterial({
+  map: tex,
+  transparent: true,
+  depthWrite: false
+})
+);
+}
+
+function loadGaiaStars(scene){
+fetch('gaia.csv')
+  .then(res => res.text())
+  .then(text => {
+    const lines = text.split('\n').slice(1);
+    const positions = [];
+    const colors = [];
+    const clickableStars = new THREE.Group();
+
+    const centerPos = new THREE.Vector3(0,0,0); // pusat galaksi
+
+    lines.forEach((line, i)=>{
+      if(!line.trim()) return;
+      const [source_id, ra, dec, parallax, pmra, pmdec, mag] = line.split(',').map(Number);
+      if(!parallax || parallax <= 0) return;
+
+      let distPc = 1000 / parallax;
+      if(distPc > 10000) return; // local bubble only
+
+      const SCALE = 1;
+      const jitter = 0.7 + Math.random() * 0.6;
+
+      // radius acak untuk sebar bintang, pangkat 0.6 biar distribusi lebih natural
+      const radius = 8000 + Math.random() * 2000; // antara 8000–10000, sesuai sphere milkyWay
+
+
+      // arah acak sphere
+// radius galaksi dari pusat
+const rMin = 2000;   // jarak minimum dari pusat galaksi
+const rMax = 15000;  // jarak maksimum
+
+// arah acak spherical
+const u = Math.random();       
+const v = Math.random();       
+const theta = u * 2 * Math.PI; 
+const phi = Math.acos(2 * v - 1); 
+
+// radius acak antara rMin dan rMax
+const r = rMin + Math.random() * (rMax - rMin);
+
+const x = r * Math.sin(phi) * Math.cos(theta);
+const y = r * Math.sin(phi) * Math.sin(theta);
+const z = r * Math.cos(phi);
+
+
+
+
+
+      // point cloud (semua bintang)
+      positions.push(x, y, z);
+      const b = Math.max(0.2, 1.4 - mag * 0.15);
+      colors.push(1, 1, 1);
+
+      // hanya bintang terang jadi sprite mesh
+      if(mag < 6){
+        const star = createStarSprite(1);
+        const size = Math.max(4, 12 - mag * 1.5);
+        star.scale.set(size, size, size);
+        star.position.set(x, y, z);
+
+        star.userData.info = {
+          title: "⭐ Gaia Star",
+          desc: "Bintang dari katalog Gaia DR3",
+          size: "Magnitude: " + mag.toFixed(2),
+          type: "Gaia DR3 Star"
+        };
+
+        clickableStars.add(star);
+      }
+    });
+
+    // buat point cloud
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 2.2,
+      vertexColors: true,
+      transparent: true,
+      depthWrite: false,
+      sizeAttenuation: true
+    });
+
+    const gaiaPoints = new THREE.Points(geometry, material);
+
+    gaiaGroup.add(gaiaPoints);
+    gaiaGroup.add(clickableStars);
+
+    console.log("Gaia stars loaded:", positions.length / 3);
+    console.log("Clickable Gaia stars:", clickableStars.children.length);
+  });
+}
+
+
+  </script>
+
+
+</body>
+</html>
