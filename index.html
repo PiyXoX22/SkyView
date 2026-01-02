@@ -326,6 +326,20 @@
         flyControls.dragToLook = true;
 
         let freeMode = false;
+        controls.minDistance = 1;
+controls.maxDistance = 9000; // < radius milkyWay (10000)
+function setFreeFlyMode() {
+  freeMode = true;
+  controls.enabled = false;
+  flyControls.enabled = true;
+}
+
+function setOrbitMode() {
+  freeMode = false;
+  flyControls.enabled = false;
+  controls.enabled = true;
+}
+
 
         // ======================
       // MOBILE FREE FLY SETUP
@@ -679,6 +693,7 @@
           new THREE.SphereGeometry(18, 16, 16),
           new THREE.MeshBasicMaterial({ color: 0x99ccff })
         );
+        
       star.position.set(s.x, s.y, s.z);
 
 
@@ -844,25 +859,152 @@
         // DEEP SPACE STARS
         // ======================
         const deepStars = [
-          { name: 'Sirius', x: 500, y: 100, z: -1500, size: 25, color: 0xffffff },
-          { name: 'Proxima Centauri', x: 600, y: 50, z: -1400, size: 12, color: 0xffaa77 },
-          { name: 'Vega', x: -400, y: 120, z: -1600, size: 20, color: 0x99ccff },
-        ];
+  // ===== GALACTIC CORE REGION =====
+  { name:"S2", x:120, y:-40, z:80, size:10, color:0xffffff },
+  { name:"S62", x:-90, y:60, z:-30, size:8, color:0xffffff },
+  { name:"IRS 16C", x:200, y:150, z:-100, size:14, color:0xfff0cc },
+  { name:"IRS 13E", x:-180, y:90, z:130, size:12, color:0xffeedd },
+  { name:"S4711", x:70, y:-120, z:60, size:7, color:0xffffff },
 
-        deepStars.forEach(b => {
-          const star = new THREE.Mesh(
-            new THREE.SphereGeometry(b.size, 16, 16),
-            new THREE.MeshBasicMaterial({ color: b.color })
-          );
-      placeDeepObject(star, 4200);
-      skyGroup.add(star);
-          star.userData.info = {
-          title: "⭐ " + b.name,
-          desc: "Bintang luar Tata Surya",
-          size: "Ukuran visual",
-          type: "Star"
-        };
-        });
+  // ===== INNER MILKY WAY =====
+  { name:"Arcturus", x:3200, y:-1800, z:900, size:22, color:0xffcc99 },
+  { name:"Aldebaran", x:4100, y:2200, z:-1200, size:24, color:0xffaa77 },
+  { name:"Antares", x:5200, y:-900, z:-2400, size:28, color:0xff5533 },
+  { name:"Spica", x:4800, y:1600, z:2100, size:21, color:0xbbeeff },
+  { name:"Fomalhaut", x:5600, y:-2600, z:1800, size:20, color:0xffffff },
+  { name:"Regulus", x:4300, y:900, z:-1700, size:19, color:0xffffff },
+
+  // ===== ORION REGION (PENGGANTI TOTAL) =====
+  { name:"Meissa", x:6200, y:1400, z:-1200, size:22, color:0xbbccff },
+{ name:"Propus (Eta Geminorum)", x:6400, y:1650, z:600, size:24, color:0xffaa77 },
+{ name:"Bellatrix Minor", x:6600, y:1900, z:-300, size:20, color:0xccccff },
+
+  // ===== LOCAL ARM =====
+  { name:"Sirius", x:8200, y:200, z:-300, size:25, color:0xffffff },
+  { name:"Procyon", x:8300, y:500, z:200, size:20, color:0xffffdd },
+  { name:"Vega", x:9000, y:1100, z:3200, size:22, color:0x99ccff },
+  { name:"Altair", x:8800, y:-900, z:2100, size:18, color:0xffffff },
+  { name:"Deneb", x:10200, y:3000, z:5400, size:32, color:0xccccff },
+  { name:"Epsilon Eridani", x:7800, y:-400, z:900, size:15, color:0xffffcc },
+  { name:"Tau Ceti", x:7600, y:300, z:-800, size:14, color:0xffffaa },
+  { name:"Kapella", x:9500, y:2200, z:-1200, size:27, color:0xffeecc },
+  { name:"Castor", x:9100, y:1500, z:-900, size:19, color:0xffffff },
+  { name:"Pollux", x:9300, y:1700, z:-1100, size:21, color:0xffcc99 },
+
+  // ===== HALO STARS =====
+  { name:"Kapteyn’s Star", x:-12000, y:4000, z:-6000, size:14, color:0xffaa77 },
+  { name:"Luyten 726-8", x:-8800, y:-2600, z:1800, size:11, color:0xff6633 },
+  { name:"HD 140283 (Methuselah)", x:-15000, y:7000, z:-8000, size:13, color:0xffffcc },
+  { name:"Groombridge 1830", x:-13000, y:5000, z:3000, size:11, color:0xffccaa },
+
+  // ===== MASSIVE / EXOTIC STARS =====
+  { name:"Eta Carinae", x:7400, y:-2800, z:-3300, size:35, color:0xffaa66 },
+  { name:"WR 104", x:6800, y:3100, z:-2600, size:29, color:0xffccaa },
+  { name:"Pistol Star", x:400, y:300, z:-200, size:34, color:0xffddaa },
+    // ===== BRIGHT GALACTIC DISK STARS =====
+    { name:"Achernar", x:8700, y:-3900, z:-1800, size:29, color:0x99ccff },
+{ name:"Canopus", x:9100, y:-4200, z:1200, size:31, color:0xffeecc },
+{ name:"Hadar", x:9400, y:-3600, z:-2600, size:28, color:0xbbeeff },
+{ name:"Acrux", x:9600, y:-3400, z:800, size:26, color:0xbbddff },
+{ name:"Mimosa", x:9550, y:-3300, z:-1400, size:27, color:0xbbccff },
+{ name:"Gacrux", x:9200, y:-3000, z:2100, size:25, color:0xffaa77 },
+
+
+  // ===== NEARBY (BUT NOT FORBIDDEN ONES) =====
+  { name:"Lalande 21185", x:7900, y:-180, z:140, size:12, color:0xff6633 },
+  { name:"Ross 154", x:8000, y:-240, z:-200, size:11, color:0xff5522 },
+  { name:"Gliese 581", x:8150, y:260, z:180, size:12, color:0xff7744 },
+  { name:"Gliese 667 C", x:8250, y:300, z:-120, size:12, color:0xff6644 },
+
+  // ===== SOLAR-TYPE STARS =====
+  { name:"61 Cygni A", x:7700, y:-350, z:250, size:15, color:0xffcc99 },
+  { name:"61 Cygni B", x:7720, y:-330, z:270, size:14, color:0xffbb88 },
+  { name:"Chi Draconis", x:8400, y:900, z:600, size:16, color:0xffffdd },
+  { name:"Sigma Draconis", x:8600, y:700, z:400, size:15, color:0xffffcc },
+
+  // ===== GIANTS & SUPERGIANTS (NON-ORION) =====
+  { name:"R Doradus", x:4800, y:-2600, z:-900, size:30, color:0xff5533 },
+  { name:"Mu Cephei", x:6100, y:2900, z:3400, size:33, color:0xff4422 },
+  { name:"VV Cephei", x:7000, y:3300, z:4100, size:36, color:0xff3311 },
+  { name:"S Doradus", x:8200, y:-3500, z:-4200, size:34, color:0xffaa66 },
+  { name:"VY Canis Majoris", x:5400, y:-4100, z:1200, size:38, color:0xff2200 },
+
+  // ===== OUTER DISK =====
+  { name:"Gamma Velorum", x:11000, y:-4800, z:900, size:30, color:0xffccaa },
+{ name:"Zeta Puppis", x:10800, y:-5200, z:-1700, size:29, color:0xaaddff },
+{ name:"Naos", x:11500, y:-5500, z:2400, size:31, color:0xbbddff },
+{ name:"Wezen", x:11200, y:-4600, z:-3200, size:30, color:0xffddaa },
+
+
+  // ===== OLD / HALO POPULATION =====
+  { name:"BD+17°3248", x:-16000, y:8200, z:-7400, size:12, color:0xffffcc },
+  { name:"HD 140283 (Methuselah)", x:-15000, y:7000, z:-10500, size:13, color:0xffffcc },
+{ name:"HE 1523-0901", x:-18000, y:9500, z:9800, size:11, color:0xffffaa },
+{ name:"CS 22892-052", x:-17000, y:8800, z:-7600, size:12, color:0xffeecc },
+
+
+  // ===== MASSIVE CLUSTER STARS =====
+  { name:"R136a1", x:14000, y:-6200, z:-5100, size:40, color:0xffffff },
+  { name:"R136a2", x:14100, y:-6150, z:-5050, size:38, color:0xffffff },
+  { name:"NGC 3603-A1", x:12500, y:5800, z:4700, size:37, color:0xffffff },
+  { name:"WR 25", x:11800, y:-5000, z:-4300, size:32, color:0xffccaa },
+  // ===== EXTENDED GALACTIC DISK =====
+{ name:"Alpheratz", x:9800, y:2200, z:1200, size:23, color:0xbbeeff },
+{ name:"Mirach", x:9600, y:2400, z:1400, size:24, color:0xffaa77 },
+{ name:"Enif", x:10100, y:1800, z:-900, size:26, color:0xffcc99 },
+{ name:"Markab", x:9900, y:1600, z:-1100, size:22, color:0xffffff },
+{ name:"Sadalmelik", x:10400, y:2600, z:1900, size:25, color:0xffffcc },
+
+// ===== SOUTHERN SKY =====
+{ name:"Alpha Pavonis", x:9200, y:-4800, z:-3600, size:24, color:0xbbeeff },
+{ name:"Beta Hydri", x:8800, y:-5200, z:-3900, size:21, color:0xffffcc },
+{ name:"Gamma Tucanae", x:9100, y:-5500, z:-4200, size:22, color:0xffffff },
+
+// ===== OLD DISK / THICK DISK =====
+{ name:"HD 84937", x:-11000, y:5200, z:-4300, size:13, color:0xffffcc },
+{ name:"HD 19445", x:-10500, y:4900, z:-4100, size:13, color:0xffffdd },
+{ name:"HD 94028", x:-9800, y:4600, z:-3800, size:14, color:0xffffaa },
+
+// ===== MASSIVE CLUSTERS =====
+{ name:"NGC 6611-205", x:6200, y:-2800, z:-900, size:30, color:0xffffff },
+{ name:"NGC 6611-367", x:6400, y:-3000, z:400, size:29, color:0xffffff },
+{ name:"Westerlund 1-26", x:7200, y:-3300, z:-2200, size:37, color:0xff3322 },
+
+
+// ===== GALACTIC BULGE =====
+{ name:"OGLE-TR-56", x:900, y:-400, z:300, size:15, color:0xffffcc },
+{ name:"OGLE-2005-BLG-390", x:1100, y:-600, z:500, size:14, color:0xffffaa },
+
+// ===== RARE OBJECTS (STARS ONLY) =====
+{ name:"UY Scuti", x:6800, y:-2900, z:-2100, size:40, color:0xff2200 },
+{ name:"RW Cephei", x:6600, y:3100, z:3800, size:35, color:0xff4422 },
+{ name:"IRC +10420", x:5900, y:2700, z:3400, size:34, color:0xffaa66 } ,
+];
+const GALAXY_OFFSET_X = 7000; // titik tengah data kamu
+
+deepStars.forEach(b => {
+  const star = new THREE.Mesh(
+    new THREE.SphereGeometry(b.size, 16, 16),
+    new THREE.MeshBasicMaterial({ color: b.color })
+  );
+
+  // ⛔ JANGAN normalize / spherical
+  star.position.set(
+  b.x - GALAXY_OFFSET_X,
+  b.y,
+  b.z
+);
+
+
+  skyGroup.add(star);
+
+  star.userData.info = {
+    title: "⭐ " + b.name,
+    desc: "Bintang luar Tata Surya",
+    size: "Ukuran visual",
+    type: "Star"
+  };
+});  
 
         
       // ======================
@@ -1303,99 +1445,99 @@
     );
   }
 
-  function loadGaiaStars(scene){
-    fetch('gaia.csv')
-      .then(res => res.text())
-      .then(text => {
-        const lines = text.split('\n').slice(1);
-        const positions = [];
-        const colors = [];
-        const clickableStars = new THREE.Group();
+    function loadGaiaStars(scene){
+      fetch('gaia.csv')
+        .then(res => res.text())
+        .then(text => {
+          const lines = text.split('\n').slice(1);
+          const positions = [];
+          const colors = [];
+          const clickableStars = new THREE.Group();
 
-        const centerPos = new THREE.Vector3(0,0,0); // pusat galaksi
+          const centerPos = new THREE.Vector3(0,0,0); // pusat galaksi
 
-        lines.forEach((line, i)=>{
-          if(!line.trim()) return;
-          const [source_id, ra, dec, parallax, pmra, pmdec, mag] = line.split(',').map(Number);
-          if(!parallax || parallax <= 0) return;
+          lines.forEach((line, i)=>{
+            if(!line.trim()) return;
+            const [source_id, ra, dec, parallax, pmra, pmdec, mag] = line.split(',').map(Number);
+            if(!parallax || parallax <= 0) return;
 
-          let distPc = 1000 / parallax;
-          if(distPc > 10000) return; // local bubble only
+            let distPc = 1000 / parallax;
+            if(distPc > 10000) return; // local bubble only
 
-          const SCALE = 1;
-          const jitter = 0.7 + Math.random() * 0.6;
+            const SCALE = 1;
+            const jitter = 0.7 + Math.random() * 0.6;
 
-          // radius acak untuk sebar bintang, pangkat 0.6 biar distribusi lebih natural
-          const radius = 8000 + Math.random() * 2000; // antara 8000–10000, sesuai sphere milkyWay
-
-
-          // arah acak sphere
-// radius galaksi dari pusat
-const rMin = 2000;   // jarak minimum dari pusat galaksi
-const rMax = 15000;  // jarak maksimum
-
-// arah acak spherical
-const u = Math.random();       
-const v = Math.random();       
-const theta = u * 2 * Math.PI; 
-const phi = Math.acos(2 * v - 1); 
-
-// radius acak antara rMin dan rMax
-const r = rMin + Math.random() * (rMax - rMin);
-
-const x = r * Math.sin(phi) * Math.cos(theta);
-const y = r * Math.sin(phi) * Math.sin(theta);
-const z = r * Math.cos(phi);
+            // radius acak untuk sebar bintang, pangkat 0.6 biar distribusi lebih natural
+            const radius = 8000 + Math.random() * 2000; // antara 8000–10000, sesuai sphere milkyWay
 
 
+            // arah acak sphere
+  // radius galaksi dari pusat
+  const rMin = 2000;   // jarak minimum dari pusat galaksi
+  const rMax = 15000;  // jarak maksimum
+
+  // arah acak spherical
+  const u = Math.random();       
+  const v = Math.random();       
+  const theta = u * 2 * Math.PI; 
+  const phi = Math.acos(2 * v - 1); 
+
+  // radius acak antara rMin dan rMax
+  const r = rMin + Math.random() * (rMax - rMin);
+
+  const x = r * Math.sin(phi) * Math.cos(theta);
+  const y = r * Math.sin(phi) * Math.sin(theta);
+  const z = r * Math.cos(phi);
 
 
 
-          // point cloud (semua bintang)
-          positions.push(x, y, z);
-          const b = Math.max(0.2, 1.4 - mag * 0.15);
-          colors.push(1, 1, 1);
 
-          // hanya bintang terang jadi sprite mesh
-          if(mag < 6){
-            const star = createStarSprite(1);
-            const size = Math.max(4, 12 - mag * 1.5);
-            star.scale.set(size, size, size);
-            star.position.set(x, y, z);
 
-            star.userData.info = {
-              title: "⭐ Gaia Star",
-              desc: "Bintang dari katalog Gaia DR3",
-              size: "Magnitude: " + mag.toFixed(2),
-              type: "Gaia DR3 Star"
-            };
+            // point cloud (semua bintang)
+            positions.push(x, y, z);
+            const b = Math.max(0.2, 1.4 - mag * 0.15);
+            colors.push(1, 1, 1);
 
-            clickableStars.add(star);
-          }
+            // hanya bintang terang jadi sprite mesh
+            if(mag < 6){
+              const star = createStarSprite(1);
+              const size = Math.max(4, 12 - mag * 1.5);
+              star.scale.set(size, size, size);
+              star.position.set(x, y, z);
+
+              star.userData.info = {
+                title: "⭐ Gaia Star",
+                desc: "Bintang dari katalog Gaia DR3",
+                size: "Magnitude: " + mag.toFixed(2),
+                type: "Gaia DR3 Star"
+              };
+
+              clickableStars.add(star);
+            }
+          });
+
+          // buat point cloud
+          const geometry = new THREE.BufferGeometry();
+          geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+          geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+          const material = new THREE.PointsMaterial({
+            size: 2.2,
+            vertexColors: true,
+            transparent: true,
+            depthWrite: false,
+            sizeAttenuation: true
+          });
+
+          const gaiaPoints = new THREE.Points(geometry, material);
+
+          gaiaGroup.add(gaiaPoints);
+          gaiaGroup.add(clickableStars);
+
+          console.log("Gaia stars loaded:", positions.length / 3);
+          console.log("Clickable Gaia stars:", clickableStars.children.length);
         });
-
-        // buat point cloud
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-        const material = new THREE.PointsMaterial({
-          size: 2.2,
-          vertexColors: true,
-          transparent: true,
-          depthWrite: false,
-          sizeAttenuation: true
-        });
-
-        const gaiaPoints = new THREE.Points(geometry, material);
-
-        gaiaGroup.add(gaiaPoints);
-        gaiaGroup.add(clickableStars);
-
-        console.log("Gaia stars loaded:", positions.length / 3);
-        console.log("Clickable Gaia stars:", clickableStars.children.length);
-      });
-  }
+    }
 
 
         </script>
