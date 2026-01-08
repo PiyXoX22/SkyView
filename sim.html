@@ -602,7 +602,7 @@ skyGroup.add(sagA);
   // ======================
   // SUN
   // ======================
-  const sunTexture = loader.load('sunmap.jpg'); // load texture Sun
+  const sunTexture = loader.load('sun.jpg'); // load texture Sun
   sunTexture.colorSpace = THREE.SRGBColorSpace;
 
   const sun = new THREE.Mesh(
@@ -690,35 +690,88 @@ skyGroup.add(sagA);
 // ======================
 const pleiades = new THREE.Group();
 
+// ======================
+// LOAD TEXTURE (SAFE)
+// ======================
+const pleiadesLoader = new THREE.TextureLoader();
+const pleiadesWhiteTex = pleiadesLoader.load("white.png");
+
+// ======================
 const pleiadesStars = [
-  { name: "Alcyone", x: 0, y: 0, z: 0 },
-  { name: "Maia", x: 80, y: 30, z: -40 },
-  { name: "Electra", x: -60, y: 20, z: 50 },
-  { name: "Taygeta", x: 40, y: -20, z: 60 },
-  { name: "Celaeno", x: -90, y: -10, z: -30 },
-  { name: "Merope", x: 20, y: 10, z: -80 },
+  { name: "Alcyone",  x: 0,   y: 0,  z: 0 },
+  { name: "Maia",     x: 80,  y: 30, z: -40 },
+  { name: "Electra",  x: -60, y: 20, z: 50 },
+  { name: "Taygeta",  x: 40,  y: -20,z: 60 },
+  { name: "Celaeno",  x: -90, y: -10,z: -30 },
+  { name: "Merope",   x: 20,  y: 10, z: -80 },
   { name: "Asterope", x: -30, y: 40, z: 20 }
 ];
 
-pleiadesStars.forEach(s => {
-  const star = new THREE.Mesh(
-    new THREE.SphereGeometry(18, 16, 16),
-    new THREE.MeshBasicMaterial({ color: 0x99ccff })
-  );
-  
-star.position.set(s.x, s.y, s.z);
+// ======================
+// GLOW TEXTURE (PROCEDURAL)
+// ======================
+function createGlowTexture(size = 256){
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  const c = size / 2;
 
+  const g = ctx.createRadialGradient(c, c, 0, c, c, c);
+  g.addColorStop(0, "rgba(180,210,255,1)");
+  g.addColorStop(0.4, "rgba(120,170,255,0.6)");
+  g.addColorStop(1, "rgba(0,0,0,0)");
+
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,size,size);
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+const pleiadesGlow = createGlowTexture();
+
+// ======================
+// CREATE STARS
+// ======================
+pleiadesStars.forEach(s => {
+
+  // ⭐ CORE (pakai white.png)
+  const star = new THREE.Mesh(
+    new THREE.SphereGeometry(14, 16, 16),
+    new THREE.MeshBasicMaterial({
+      map: pleiadesWhiteTex,
+      color: 0x99ccff,        // tint biru khas Pleiades
+      transparent: true
+    })
+  );
+
+  star.position.set(s.x, s.y, s.z);
+
+  // ✨ GLOW
+  const glow = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: pleiadesGlow,
+      color: 0x99ccff,
+      transparent: true,
+      opacity: 0.75,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    })
+  );
+
+  glow.scale.set(100, 100, 1);
+  star.add(glow);
 
   star.userData.info = {
     title: "🌟 " + s.name,
     desc: "Bintang dalam gugus terbuka Pleiades (M45)",
     size: "Bintang muda panas",
-    type: "Blue-hot star cluster"
+    type: "Open Star Cluster"
   };
 
   pleiades.add(star);
 });
 
+// ======================
 placeDeepObject(pleiades, 3800);
 pleiades.rotation.x = THREE.MathUtils.degToRad(24);
 skyGroup.add(pleiades);
