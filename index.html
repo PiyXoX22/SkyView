@@ -11,6 +11,7 @@ body {
   color:white; 
   background:black; 
   overflow-x:hidden; /* horizontal scroll hilang */
+  cursor: none;
 }
 
 /* Background & starfield */
@@ -53,17 +54,43 @@ h1,h2,p {
 }
 
 /* ===== BUTTON ===== */
-button { 
-  margin-top:10px; padding:14px 30px; border:1px solid cyan; color:cyan; letter-spacing:3px; 
-  cursor:pointer; transition:0.3s; font-size:16px; 
-  text-shadow:0 0 3px #0ff,0 0 6px #0ff,0 0 10px #0ff; 
-  background:transparent; border-radius:6px; z-index:10;
+button {
+  width: 240px;              /* ⬅ SEMUA TOMBOL SAMA LEBAR */
+  height: 34px;              /* ⬅ SEMUA TOMBOL SAMA TINGGI */
+
+  margin-top: 18px;
+  border: 1px solid cyan;
+  background: transparent;
+
+  color: cyan;
+  font-family: monospace;
+  font-size: 18px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: none;
+  transition: all 0.3s ease;
+
+  border-radius: 10px;
+  text-shadow: 
+    0 0 6px #0ff,
+    0 0 12px #0ff,
+    0 0 20px #0ff;
+
+  box-shadow: 
+    inset 0 0 10px rgba(0,255,255,0.3),
+    0 0 10px rgba(0,255,255,0.3);
 }
+
 button:hover { 
   background:cyan; color:black; 
   box-shadow:0 0 15px cyan,0 0 25px cyan,0 0 35px cyan; 
 }
-button:disabled { opacity:0.5; cursor:not-allowed; }
+button:disabled { opacity:0.5; cursor:none; }
 
 /* ===== CONTENT ===== */
 #eduContent, #cinematicContent { 
@@ -104,14 +131,23 @@ button:disabled { opacity:0.5; cursor:not-allowed; }
   padding: 15px;
   text-align: center;
   transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
-  cursor: pointer;
+  cursor: none;
   flex-shrink:0;
+  min-height: 320px;     /* ⬅ semua card konsisten */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 .eduCard img {
   width: 100%;
+  height: 130px;          /* ⬅ tinggi SERAGAM */
+  object-fit: cover;     /* ⬅ crop rapi */
+  object-position: center;
   border-radius: 8px;
   margin-bottom: 10px;
+  background: #000;      /* ⬅ biar gambar kecil tetap cakep */
 }
+
 .eduCard h2 { margin:8px 0; font-size:18px; }
 .eduCard p { font-size:14px; line-height:1.3; }
 .eduCard:hover { transform:translateY(-5px); box-shadow:0 0 20px cyan,0 0 30px cyan; background: rgba(0,255,255,0.1); }
@@ -123,13 +159,79 @@ button:disabled { opacity:0.5; cursor:not-allowed; }
 @media (max-width:480px){
   .eduCard { width:90%; }
 }
+/* ===== CUSTOM CURSOR ===== */
+#cursorOuter, #cursorInner {
+  position:fixed;
+  top:0; left:0;
+  pointer-events:none;
+  border-radius:50%;
+  transform:translate(-50%, -50%);
+  transition: transform 0.1s ease-out;
+  z-index:99999;
+}
+
+#cursorInner {
+  width:8px; height:8px;
+  background:#0ff;
+  box-shadow:0 0 8px #0ff, 0 0 15px #0ff;
+}
+
+#cursorOuter {
+  width:35px; height:35px;
+  border:2px solid #0ff;
+  box-shadow:0 0 15px #0ff,0 0 25px #0ff;
+  opacity:0.5;
+}
+#quizContent, #aboutContent {
+  position: relative;
+  z-index: 10;
+  padding: 50px;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  display: none;
+}
+
+#quizContent.show, #aboutContent.show {
+  display: block;
+}
+
+#quizBox {
+  margin-top: 30px;
+  padding: 30px;
+  border: 1px solid cyan;
+  border-radius: 12px;
+  background: rgba(0,255,255,0.05);
+  box-shadow: 0 0 25px rgba(0,255,255,0.3);
+}
+
+#quizOptions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+#quizOptions button {
+  width: 100%;
+  max-width: 420px;
+}
+
+#quizResult {
+  margin-top: 15px;
+  font-size: 16px;
+}
+
 </style>
 </head>
 <body>
 
 <img id="bgImage" src="bg.jpg" alt="Deep Space Background">
 <canvas id="starfield"></canvas>
-
+<!-- CUSTOM CURSOR -->
+<div id="cursorOuter"></div>
+<div id="cursorInner"></div>
 <!-- LOADING -->
 <div id="loadingScreen"><h1 id="loadingText">Loading SpaDu</h1></div>
 
@@ -140,6 +242,8 @@ button:disabled { opacity:0.5; cursor:not-allowed; }
   <button id="playAmbienceBtn">Play Ambience</button>
   <button id="cinematicBtn">Cinematic Mode</button>
   <button id="eduBtn">Educational Mode</button>
+  <button id="quizBtn">Quiz Mode</button>
+  <button id="aboutBtn">About SpaDu</button>
   <button id="startBtn">START Simulation</button>
 </div>
 
@@ -169,6 +273,167 @@ button:disabled { opacity:0.5; cursor:not-allowed; }
   </video>
 </div>
 
+<!-- QUIZ MODE -->
+<div id="quizContent">
+  <h1>Quiz Mode</h1>
+  <p>Uji pengetahuan astronomi kamu 🌌</p>
+
+  <div id="quizBox">
+    <h2 id="quizQuestion"></h2>
+
+    <div id="quizOptions"></div>
+
+    <p id="quizResult"></p>
+    <button id="nextQuestionBtn">Next Question</button>
+  </div>
+
+  <button id="backQuizBtn">Kembali ke Menu</button>
+</div>
+
+<!-- ABOUT MODE -->
+<div id="aboutContent">
+  <h1>About SpaDu</h1>
+
+  <div class="aboutSection">
+    <p>
+      <b>SpaDu (Space Education)</b> adalah website edukasi astronomi interaktif
+      yang menghadirkan pengalaman belajar antariksa secara visual,
+      imersif, dan mudah dipahami.
+    </p>
+  </div>
+
+  <div class="aboutSection">
+    <p>
+      SpaDu dikembangkan oleh <b>PiyXoX Developer</b>,
+      seorang <b>solo developer asal Indonesia</b> yang membangun
+      aplikasi ini secara mandiri — mulai dari perancangan konsep,
+      desain antarmuka, sistem interaktif, hingga visual sinematik.
+    </p>
+  </div>
+
+  <div class="aboutSection">
+    <p>
+      Tujuan utama SpaDu adalah untuk
+      <b>mengedukasi pelajar di Indonesia</b> agar lebih mengenal
+      astronomi dan antariksa dengan pendekatan yang modern,
+      menarik, dan tidak membosankan.
+    </p>
+  </div>
+
+  <div class="aboutSection">
+    <p>
+      Selain untuk pelajar, SpaDu juga terbuka bagi
+      <b>masyarakat umum</b> sebagai media eksplorasi sains,
+      pembelajaran mandiri, serta pengenalan dunia luar angkasa
+      tanpa memerlukan latar belakang astronomi.
+    </p>
+  </div>
+
+  <div class="aboutSection aboutFeatures">
+    <h2>Fitur Utama</h2>
+    <ul>
+      <li>🚀 Cinematic Space Experience</li>
+      <li>📚 Educational Astronomy Cards</li>
+      <li>🧠 Quiz Interaktif</li>
+      <li>🌌 Simulasi Antariksa</li>
+    </ul>
+  </div>
+
+  <div class="aboutSection">
+    <p>
+      SpaDu diharapkan dapat menjadi salah satu
+      <b>media edukasi digital Indonesia</b>
+      yang membantu meningkatkan minat belajar sains,
+      khususnya astronomi, bagi generasi muda.
+    </p>
+  </div>
+
+  <div class="aboutQuote">
+    “Menjelajah semesta, membuka wawasan, dan menyalakan rasa ingin tahu.”
+    <span>— PiyXoX Developer</span>
+  </div>
+
+  <!-- DONASI -->
+  <div class="donationBox">
+    <h2>Dukung Pengembangan SpaDu</h2>
+    <p>
+      Jika kamu merasa SpaDu bermanfaat dan ingin mendukung
+      pengembangannya agar terus berkembang,
+      kamu dapat memberikan donasi secara sukarela.
+    </p>
+
+    <p class="donationNote">
+      Setiap dukunganmu sangat berarti untuk pengembangan
+      fitur baru dan peningkatan kualitas edukasi.
+    </p>
+
+    <button id="donateBtn">💙 Donasi Sekarang</button>
+  </div>
+
+  <button id="backAboutBtn">Kembali ke Menu</button>
+</div>
+<style>
+  .aboutSection {
+  margin-bottom: 22px;
+}
+
+.aboutFeatures h2 {
+  margin-bottom: 12px;
+}
+
+.aboutFeatures ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.aboutFeatures li {
+  margin: 8px 0;
+  font-size: 15px;
+}
+
+.aboutQuote {
+  margin: 30px 0;
+  padding: 18px;
+  border-left: 3px solid cyan;
+  background: rgba(0,255,255,0.05);
+  font-style: italic;
+}
+
+.aboutQuote span {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.donationBox {
+  margin: 35px 0;
+  padding: 25px;
+  border: 1px solid cyan;
+  border-radius: 12px;
+  background: rgba(0,255,255,0.08);
+  box-shadow: 0 0 20px rgba(0,255,255,0.25);
+}
+
+.donationBox h2 {
+  margin-bottom: 12px;
+}
+
+.donationNote {
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+#donateBtn {
+  margin-top: 18px;
+  border-color: #0ff;
+}
+
+</style>
+
+
 <div id="fadeOverlay"></div>
 
 <!-- AUDIO -->
@@ -193,8 +458,10 @@ const muteBtn = document.getElementById("muteBtn");
 const eduContent = document.getElementById("eduContent");
 const cinematicContent = document.getElementById("cinematicContent");
 const cineVideo = document.getElementById("cineVideo");
+const quizBtn = document.getElementById("quizBtn");
+const aboutBtn = document.getElementById("aboutBtn");
 
-const buttons = [cinematicBtn, eduBtn, startBtn];
+const buttons = [cinematicBtn, eduBtn, quizBtn, aboutBtn, startBtn];
 buttons.forEach(b => b.disabled = true);
 
 // ===== LOADING ANIMASI =====
@@ -243,6 +510,7 @@ eduBtn.addEventListener("click", () => { intro.classList.remove("show"); eduCont
 document.getElementById("backEduBtn").addEventListener("click", () => {
   eduContent.classList.remove("show"); intro.classList.add("show");
 });
+
 
 // START SIMULATION
 startBtn.addEventListener("click", () => {
@@ -295,57 +563,53 @@ const astroObjects = [
   {title:"Saturn", img:"https://informatiebegin.nl/wp-content/uploads/Saturnus-2400x1524_c.jpg", desc:"Dikenal dengan cincin spektakulernya."},
   {title:"Uranus", img:"https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2003/05/uranus2/17876812-2-eng-GB/Uranus_pillars.jpg", desc:"Planet es berwarna biru kehijauan dengan sumbu miring."},
   {title:"Neptune", img:"https://tse3.mm.bing.net/th/id/OIP.oMYnZQfrCVNWVMsXKRmyKQHaDt?pid=Api&P=0&h=180", desc:"Planet es biru terdalam di Tata Surya."},
-  {title:"Pluto", img:"pluto.jpg", desc:"Dahulu planet kesembilan, kini tergolong planet kerdil."},
+  {title:"Pluto", img:"https://cdn.britannica.com/85/183485-050-C93475CB/Pluto-spacecraft-New-Horizons-July-13-2015.jpg", desc:"Dahulu planet kesembilan, kini tergolong planet kerdil."},
 
-  {title:"Alpha Centauri", img:"alpha_centauri.jpg", desc:"Sistem bintang terdekat ke Matahari."},
-  {title:"Sirius", img:"sirius.jpg", desc:"Bintang paling terang di langit malam Bumi."},
-  {title:"Vega", img:"vega.jpg", desc:"Bintang terang di rasi Lyra."},
-  {title:"Betelgeuse", img:"betelgeuse.jpg", desc:"Supergiant merah di rasi Orion."},
-  {title:"Rigel", img:"rigel.jpg", desc:"Bintang supergiant biru di rasi Orion."},
-  {title:"Polaris", img:"polaris.jpg", desc:"Bintang Utara, penunjuk arah utara di langit."},
-  {title:"Antares", img:"antares.jpg", desc:"Supergiant merah di rasi Scorpio."},
-  {title:"Proxima Centauri", img:"proxima_centauri.jpg", desc:"Bintang paling dekat dengan Tata Surya kita."},
-  {title:"Deneb", img:"deneb.jpg", desc:"Bintang terang di rasi Cygnus."},
-  {title:"Altair", img:"altair.jpg", desc:"Bintang terang di rasi Aquila."},
+  {title:"Alpha Centauri", img:"https://as1.ftcdn.net/jpg/06/96/02/52/1000_F_696025216_gK7KLODJacy8FCDRa3eVQhy6SttomCNl.jpg", desc:"Sistem bintang terdekat ke Matahari."},
+  {title:"Sirius", img:"https://starwalk.space/gallery/images/sirius-base/1920x1080.jpg", desc:"Bintang paling terang di langit malam Bumi."},
+  {title:"Vega", img:"https://starwalk.space/gallery/images/vega-var1/1920x1080.jpg", desc:"Bintang terang di rasi Lyra."},
+  {title:"Betelgeuse", img:"https://www.spacechatter.com/wp-content/uploads/2022/08/AdobeStock_312129542-scaled.jpeg", desc:"Supergiant merah di rasi Orion."},
+  {title:"Rigel", img:"https://images-cdn.9gag.com/photo/aGyYXQ0_700b.jpg", desc:"Bintang supergiant biru di rasi Orion."},
+  {title:"Polaris", img:"https://starwalk.space/gallery/images/polaris-base/1920x1080.jpg", desc:"Bintang Utara, penunjuk arah utara di langit."},
+  {title:"Antares", img:"https://tse3.mm.bing.net/th/id/OIP.KWwGQmrwA7DLWGxv0rTR0wHaEd?pid=Api&P=0&h=180", desc:"Supergiant merah di rasi Scorpio."},
+  {title:"Proxima Centauri", img:"http://vignette2.wikia.nocookie.net/elite-dangerous/images/c/ca/AlphaCentauriProximaCentauri.png/revision/latest?cb=20151125045631", desc:"Bintang paling dekat dengan Tata Surya kita."},
+  {title:"Deneb", img:"https://osr.org/wp-content/uploads/2020/01/deneb-star.jpg", desc:"Bintang terang di rasi Cygnus."},
+  {title:"Altair", img:"https://osr.org/wp-content/uploads/2016/08/altair-star.jpg", desc:"Bintang terang di rasi Aquila."},
 
-  {title:"Milky Way", img:"milky_way.jpg", desc:"Galaksi spiral tempat Bumi berada."},
-  {title:"Andromeda Galaxy", img:"andromeda.jpg", desc:"Galaksi spiral besar terdekat dengan Bima Sakti."},
-  {title:"Triangulum Galaxy", img:"triangulum.jpg", desc:"Galaksi spiral kecil di dekat Andromeda."},
-  {title:"Whirlpool Galaxy", img:"whirlpool.jpg", desc:"Galaksi spiral dengan struktur jelas dan indah."},
-  {title:"Sombrero Galaxy", img:"sombrero.jpg", desc:"Galaksi dengan struktur menyerupai topi sombrero."},
-  {title:"Black Eye Galaxy", img:"black_eye.jpg", desc:"Galaksi dengan inti gelap unik."},
-  {title:"Pinwheel Galaxy", img:"pinwheel.jpg", desc:"Galaksi spiral besar dan rinci."},
-  {title:"Cartwheel Galaxy", img:"cartwheel.jpg", desc:"Galaksi berbentuk unik akibat tabrakan galaksi."},
-  {title:"Large Magellanic Cloud", img:"lmc.jpg", desc:"Galaksi satelit Bima Sakti yang terlihat dari belahan bumi selatan."},
-  {title:"Small Magellanic Cloud", img:"smc.jpg", desc:"Galaksi satelit Bima Sakti kecil namun terang."},
+  {title:"Milky Way", img:"http://d1jqu7g1y74ds1.cloudfront.net/wp-content/uploads/2013/10/milky_way.jpg", desc:"Galaksi spiral tempat Bumi berada."},
+  {title:"Andromeda Galaxy", img:"https://cdn.mos.cms.futurecdn.net/hCXYB5YKXzdq2WEHYEe36d.jpg", desc:"Galaksi spiral besar terdekat dengan Bima Sakti."},
+  {title:"Triangulum Galaxy", img:"https://aasnova.org/wp-content/uploads/2022/07/sig09-004.jpg", desc:"Galaksi spiral kecil di dekat Andromeda."},
+  {title:"Whirlpool Galaxy", img:"https://astrobackyard.com/wp-content/uploads/2020/04/whirlpool-galaxy-telescope.jpg", desc:"Galaksi spiral dengan struktur jelas dan indah."},
+  {title:"Sombrero Galaxy", img:"https://i.pinimg.com/originals/9c/fa/5c/9cfa5cbde5b99ad01de2766b4196ae1b.jpg", desc:"Galaksi dengan struktur menyerupai topi sombrero."},
+  {title:"Black Eye Galaxy", img:"https://www.messier-objects.com/wp-content/uploads/2015/07/Messier-64.jpg", desc:"Galaksi dengan inti gelap unik."},
+  {title:"Pinwheel Galaxy", img:"https://astronomynow.com/wp-content/uploads/2023/04/22YB-APR-MAIN-DEEP-SKY-M101-GILLILAND.jpg", desc:"Galaksi spiral besar dan rinci."},
+  {title:"Cartwheel Galaxy", img:"https://www.courthousenews.com/wp-content/uploads/2022/08/cartwheel-galaxy-1880x1730.jpg", desc:"Galaksi berbentuk unik akibat tabrakan galaksi."},
+  {title:"Large Magellanic Cloud", img:"https://scitechdaily.com/images/the-Large-Magellanic-Cloud-a-satellite-galaxy-of-the-Milky-Way.jpg", desc:"Galaksi satelit Bima Sakti yang terlihat dari belahan bumi selatan."},
+  {title:"Small Magellanic Cloud", img:"https://astrocat.info/wp-content/uploads/2022/10/Small-Magellanic-Cloud-Aleix-Roig-2022-scaled.jpg", desc:"Galaksi satelit Bima Sakti kecil namun terang."},
 
-  {title:"Orion Nebula", img:"orion_nebula.jpg", desc:"Nebula emisi besar tempat lahirnya bintang baru."},
-  {title:"Eagle Nebula", img:"eagle_nebula.jpg", desc:"Nebula terkenal dengan struktur “Pillars of Creation”."},
-  {title:"Lagoon Nebula", img:"lagoon_nebula.jpg", desc:"Nebula emisi di rasi Sagitarius."},
-  {title:"Ring Nebula", img:"ring_nebula.jpg", desc:"Nebula planet yang berbentuk cincin."},
-  {title:"Helix Nebula", img:"helix_nebula.jpg", desc:"Nebula planet yang disebut “mata Tuhan”."},
-  {title:"Crab Nebula", img:"crab_nebula.jpg", desc:"Sisa supernova berenergi tinggi."},
-  {title:"Carina Nebula", img:"carina_nebula.jpg", desc:"Nebula emisi besar di konstelasi Carina."},
-  {title:"Horsehead Nebula", img:"horsehead_nebula.jpg", desc:"Nebula gelap berbentuk kepala kuda."},
-  {title:"Rosette Nebula", img:"rosette_nebula.jpg", desc:"Nebula berbentuk bunga mawar."},
-  {title:"Trifid Nebula", img:"trifid_nebula.jpg", desc:"Nebula tiga lobus besar di Sagitarius."},
+  {title:"Orion Nebula", img:"https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2018/05/the_orion_nebula_also_known_as_m42/17541448-1-eng-GB/The_Orion_Nebula_also_known_as_M42.jpg", desc:"Nebula emisi besar tempat lahirnya bintang baru."},
+  {title:"Eagle Nebula", img:"https://dq0hsqwjhea1.cloudfront.net/compressed-4.jpg", desc:"Nebula terkenal dengan struktur “Pillars of Creation”."},
+  {title:"Lagoon Nebula", img:"https://www.messier-objects.com/wp-content/uploads/2015/02/Lagoon-Nebula.jpg", desc:"Nebula emisi di rasi Sagitarius."},
+  {title:"Ring Nebula", img:"https://www.galacticimages.com/wp-content/uploads/2021/07/M57_color630secChumackHRblog.jpg", desc:"Nebula planet yang berbentuk cincin."},
+  {title:"Helix Nebula", img:"https://skyandtelescope.org/wp-content/uploads/Helix-Nebula-Compressed-scaled.jpg", desc:"Nebula planet yang disebut “mata Tuhan”."},
+  {title:"Crab Nebula", img:"https://static.vecteezy.com/system/resources/previews/024/394/081/non_2x/capturing-the-intricate-details-of-the-crab-nebula-a-supernova-remnant-that-is-one-of-the-most-studied-andgraphed-deep-space-objects-generate-ai-free-photo.jpg", desc:"Sisa supernova berenergi tinggi."},
+  {title:"Carina Nebula", img:"https://static.vecteezy.com/system/resources/previews/024/388/213/large_2x/using-multiple-exposures-to-create-a-detailed-and-colorful-image-of-the-carina-nebula-a-star-forming-region-located-in-the-southern-constellation-carina-generate-ai-free-photo.jpg", desc:"Nebula emisi besar di konstelasi Carina."},
+  {title:"Horsehead Nebula", img:"http://apod.nasa.gov/apod/image/1505/Horsehead_Colombari_2035.jpg", desc:"Nebula gelap berbentuk kepala kuda."},
+  {title:"Rosette Nebula", img:"https://chamberlainobservatory.com/wp-content/uploads/2020/02/20200202-Caldwell-49-Rosette-Nebula-HOO-palette-2048x1561.jpg", desc:"Nebula berbentuk bunga mawar."},
+  {title:"Trifid Nebula", img:"http://www.constellation-guide.com/wp-content/uploads/2014/08/Trifid-Nebula.jpg", desc:"Nebula tiga lobus besar di Sagitarius."},
 
-  {title:"Pleiades", img:"pleiades.jpg", desc:"Gugus bintang terbuka terkenal juga dengan nama Tujuh Saudari."},
-  {title:"Hyades", img:"hyades.jpg", desc:"Gugus bintang terbuka besar di rasi Taurus."},
-  {title:"Omega Centauri", img:"omega_centauri.jpg", desc:"Gugus bola terbesar di Bima Sakti."},
-  {title:"M13 Hercules", img:"m13.jpg", desc:"Gugus bola terang di rasi Hercules."},
-  {title:"M22", img:"m22.jpg", desc:"Gugus bola di dekat pusat Bima Sakti."},
-  {title:"47 Tucanae", img:"47_tucanae.jpg", desc:"Gugus bola terang di rasi Tucana."},
-  {title:"M45", img:"m45.jpg", desc:"Identik dengan Pleiades, gugus bintang muda."},
-  {title:"M57 Ring", img:"m57_ring.jpg", desc:"Nebula planet terkenal berbentuk cincin."},
-  {title:"M8 Lagoon", img:"m8_lagoon.jpg", desc:"Nebula emisi besar di Sagitarius."},
-  {title:"M17 Omega", img:"m17_omega.jpg", desc:"Nebula emisi di rasi Sagitarius."},
+  {title:"Pleiades", img:"https://apod.nasa.gov/apod/image/1209/m45_gendler_2400.jpg", desc:"Gugus bintang terbuka terkenal juga dengan nama Tujuh Saudari."},
+  {title:"Hyades", img:"https://astronomynow.com/wp-content/uploads/2017/03/Aldebaran-Moon-Hyades_4Mar2017_844pm_GMT_central_UK_940x705_v2.png", desc:"Gugus bintang terbuka besar di rasi Taurus."},
+  {title:"Omega Centauri", img:"https://cdn.britannica.com/48/142648-050-DD2D538C/stars-core-cluster-Omega-Centauri-Hubble-Space.jpg", desc:"Gugus bola terbesar di Bima Sakti."},
+  {title:"M13 Hercules", img:"https://earthsky.org/upl/2014/04/M13-hercules-Bareket-Observatory-Israel-e1398075260650.jpg", desc:"Gugus bola terang di rasi Hercules."},
+  {title:"M22", img:"https://www.messier-objects.com/wp-content/uploads/2015/04/Messier-22-1024x679.jpg", desc:"Gugus bola di dekat pusat Bima Sakti."},
+  {title:"47 Tucanae", img:"https://thumbs.dreamstime.com/b/tucanae-tuc-also-designated-as-ngc-caldwell-globular-cluster-located-constellation-tucana-tucanae-second-306642434.jpg", desc:"Gugus bola terang di rasi Tucana."},
 
-  {title:"Exoplanet Kepler-22b", img:"kepler22b.jpg", desc:"Salah satu exoplanet pertama yang ditemukan di zona layak huni."},
-  {title:"Exoplanet Proxima b", img:"proxima_b.jpg", desc:"Exoplanet yang mengorbit Proxima Centauri."},
-  {title:"Exoplanet TRAPPIST-1e", img:"trappist1e.jpg", desc:"Salah satu planet di sistem TRAPPIST-1 yang menarik."},
-  {title:"Comet Halley", img:"comet_halley.jpg", desc:"Komet paling terkenal yang muncul setiap ~76 tahun."},
-  {title:"Asteroid Ceres", img:"asteroid_ceres.jpg", desc:"Planet kerdil di sabuk asteroid."}
+  {title:"Exoplanet Kepler-22b", img:"https://cdn.mos.cms.futurecdn.net/MDtGBHDVJ5cdmQDWuCRD68.jpg", desc:"Salah satu exoplanet pertama yang ditemukan di zona layak huni."},
+  {title:"Exoplanet Proxima b", img:"http://campbelllawobserver.com/wp-content/uploads/2016/09/Proxima-b-Photo-by-sciencealert.com-Courtesy-of-Google.jpg", desc:"Exoplanet yang mengorbit Proxima Centauri."},
+  {title:"Exoplanet TRAPPIST-1e", img:"http://upload.wikimedia.org/wikipedia/commons/3/38/TRAPPIST-1e_artist_impression_2018.png", desc:"Salah satu planet di sistem TRAPPIST-1 yang menarik."},
+  {title:"Comet Halley", img:"https://ichef.bbci.co.uk/news/976/mcs/media/images/76726000/jpg/_76726414_halley2.jpg", desc:"Komet paling terkenal yang muncul setiap ~76 tahun."},
+  {title:"Asteroid Ceres", img:"https://static.independent.co.uk/2022/02/23/00/Ceres.jpg", desc:"Planet kerdil di sabuk asteroid."}
 ];
 
 
@@ -364,7 +628,271 @@ while(eduCardsContainer.children.length<50){
     eduCardsContainer.appendChild(clone);
   }
 }
+// ===== CUSTOM CURSOR =====
+const cursorInner = document.getElementById("cursorInner");
+const cursorOuter = document.getElementById("cursorOuter");
+
+let mouseX = 0, mouseY = 0;
+let posX = 0, posY = 0;
+let scaleOuter = 1; // skala default
+
+document.addEventListener("mousemove", e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    // Inner cursor langsung mengikuti mouse
+    cursorInner.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+
+    // Outer cursor smooth mengikuti mouse + scale
+    posX += (mouseX - posX) * 0.15;
+    posY += (mouseY - posY) * 0.15;
+    cursorOuter.style.transform = `translate(${posX}px, ${posY}px) scale(${scaleOuter})`;
+});
+
+// Hover efek pada button / card
+document.querySelectorAll("button, .eduCard").forEach(el => {
+    el.addEventListener("mouseenter", () => {
+        scaleOuter = 1.5;
+        cursorOuter.style.opacity = "0.8";
+    });
+    el.addEventListener("mouseleave", () => {
+        scaleOuter = 1;
+        cursorOuter.style.opacity = "0.5";
+    });
+});
+
+const quizData = [
+  // === DASAR ===
+  { q: "Planet terdekat dari Matahari adalah?", options: ["Venus", "Mars", "Mercury", "Earth"], answer: 2 },
+  { q: "Planet terbesar di Tata Surya adalah?", options: ["Saturnus", "Jupiter", "Neptunus", "Uranus"], answer: 1 },
+  { q: "Planet yang dijuluki Planet Merah adalah?", options: ["Venus", "Mars", "Mercury", "Jupiter"], answer: 1 },
+  { q: "Satelit alami Bumi disebut?", options: ["Europa", "Titan", "Moon", "Phobos"], answer: 2 },
+  { q: "Planet dengan cincin paling jelas adalah?", options: ["Jupiter", "Uranus", "Neptunus", "Saturnus"], answer: 3 },
+  { q: "Planet terpanas di Tata Surya adalah?", options: ["Mercury", "Venus", "Mars", "Jupiter"], answer: 1 },
+  { q: "Planet terjauh dari Matahari adalah?", options: ["Uranus", "Saturnus", "Neptunus", "Pluto"], answer: 2 },
+  { q: "Sabuk asteroid terletak di antara planet?", options: ["Bumi & Mars", "Mars & Jupiter", "Jupiter & Saturnus", "Venus & Bumi"], answer: 1 },
+  { q: "Ilmu yang mempelajari benda langit disebut?", options: ["Astrofisika", "Kosmologi", "Astronomi", "Geologi"], answer: 2 },
+  { q: "Bintang paling terang di langit malam adalah?", options: ["Sirius", "Rigel", "Betelgeuse", "Polaris"], answer: 0 },
+
+  // === MATAHARI & BINTANG ===
+  { q: "Matahari termasuk jenis bintang apa?", options: ["Red Giant", "Yellow Dwarf", "White Dwarf", "Neutron Star"], answer: 1 },
+  { q: "Lapisan Matahari yang terlihat saat gerhana total disebut?", options: ["Fotosfer", "Kromosfer", "Korona", "Inti"], answer: 2 },
+  { q: "Bintang penunjuk arah utara adalah?", options: ["Sirius", "Vega", "Polaris", "Altair"], answer: 2 },
+  { q: "Bintang neutron terbentuk dari?", options: ["Planet", "Bintang kecil", "Runtuhan bintang masif", "Nebula"], answer: 2 },
+  { q: "Ledakan akhir kehidupan bintang masif disebut?", options: ["Nova", "Supernova", "Nebula", "Quasar"], answer: 1 },
+
+  // === GALAKSI ===
+  { q: "Galaksi tempat kita tinggal disebut?", options: ["Andromeda", "Triangulum", "Milky Way", "Sombrero"], answer: 2 },
+  { q: "Galaksi terdekat dengan Bima Sakti adalah?", options: ["Sombrero", "Whirlpool", "Andromeda", "Cartwheel"], answer: 2 },
+  { q: "Lubang hitam supermasif biasanya berada di?", options: ["Ujung galaksi", "Pusat galaksi", "Dekat planet", "Nebula"], answer: 1 },
+  { q: "Bentuk galaksi Bima Sakti adalah?", options: ["Elips", "Tak beraturan", "Spiral", "Cincin"], answer: 2 },
+
+  // === BLACK HOLE ===
+  { q: "Apa itu Black Hole?", options: ["Bintang terang", "Planet gelap", "Wilayah gravitasi ekstrem", "Nebula panas"], answer: 2 },
+  { q: "Batas cahaya tidak bisa keluar dari Black Hole disebut?", options: ["Singularity", "Event Horizon", "Accretion Disk", "Photon Ring"], answer: 1 },
+  { q: "Black Hole terbentuk dari runtuhnya?", options: ["Planet", "Asteroid", "Bintang masif", "Nebula"], answer: 2 },
+  { q: "Bagian pusat Black Hole disebut?", options: ["Korona", "Inti", "Singularity", "Core"], answer: 2 },
+
+  // === NEBULA ===
+  { q: "Nebula adalah?", options: ["Planet mati", "Awan gas dan debu", "Lubang hitam kecil", "Inti galaksi"], answer: 1 },
+  { q: "Nebula tempat kelahiran bintang disebut?", options: ["Planetary Nebula", "Supernova Remnant", "Stellar Nursery", "Dark Nebula"], answer: 2 },
+  { q: "Nebula Orion termasuk jenis?", options: ["Emission Nebula", "Dark Nebula", "Planetary Nebula", "Reflection Nebula"], answer: 0 },
+
+  // === EXOPLANET ===
+  { q: "Exoplanet adalah?", options: ["Planet Tata Surya", "Planet di luar Tata Surya", "Bulan", "Bintang kecil"], answer: 1 },
+  { q: "Metode paling umum mendeteksi exoplanet?", options: ["Direct Imaging", "Transit Method", "Radio", "Infrared"], answer: 1 },
+  { q: "Teleskop pemburu exoplanet terkenal adalah?", options: ["Hubble", "Kepler", "Chandra", "Spitzer"], answer: 1 },
+
+  // === FENOMENA ===
+  { q: "Fenomena Bulan menutupi Matahari disebut?", options: ["Gerhana Bulan", "Gerhana Matahari", "Ekliptika", "Solstis"], answer: 1 },
+  { q: "Hujan meteor terjadi karena?", options: ["Ledakan bintang", "Debu komet", "Tabrakan planet", "Nebula"], answer: 1 },
+  { q: "Gaya yang mengikat planet ke Matahari adalah?", options: ["Magnet", "Tekanan", "Gravitasi", "Radiasi"], answer: 2 },
+
+  // === LANJUTAN ===
+  { q: "Planet dengan rotasi paling lama adalah?", options: ["Mars", "Venus", "Mercury", "Neptunus"], answer: 1 },
+  { q: "Planet dengan kemiringan sumbu ekstrem?", options: ["Mars", "Uranus", "Saturnus", "Jupiter"], answer: 1 },
+  { q: "Kecepatan cahaya adalah sekitar?", options: ["30.000 km/s", "300.000 km/s", "3.000 km/s", "3 juta km/s"], answer: 1 },
+  { q: "Satuan jarak astronomi antar bintang disebut?", options: ["AU", "Parsec", "Km", "Meter"], answer: 1 }
+];
+
+
+// =====================
+// ELEMENT
+// =====================
+const quizContent = document.getElementById("quizContent");
+const aboutContent = document.getElementById("aboutContent");
+const backQuizBtn = document.getElementById("backQuizBtn");
+const backAboutBtn = document.getElementById("backAboutBtn");
+
+const quizQuestion = document.getElementById("quizQuestion");
+const quizOptions  = document.getElementById("quizOptions");
+const quizResult   = document.getElementById("quizResult");
+const nextQuestionBtn = document.getElementById("nextQuestionBtn");
+
+// =====================
+// AUDIO
+// =====================
+const correctSound = new Audio("audio/correct.mp3");
+const wrongSound   = new Audio("audio/wrong.mp3");
+
+// =====================
+// STATE
+// =====================
+let quizIndex = 0;
+let score = 0;
+let answered = false;
+let selectedQuiz = [];
+
+// =====================
+// SHUFFLE
+// =====================
+function shuffleArray(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+// =====================
+// START QUIZ (10 SOAL ACAK)
+// =====================
+function startQuiz() {
+  selectedQuiz = shuffleArray([...quizData]).slice(0, 10);
+  quizIndex = 0;
+  score = 0;
+  loadQuiz();
+}
+
+// =====================
+// LOAD QUIZ
+// =====================
+function loadQuiz() {
+  answered = false;
+  quizResult.textContent = "";
+  quizOptions.innerHTML = "";
+
+  if (quizIndex >= selectedQuiz.length) {
+    showResult();
+    return;
+  }
+
+  const data = selectedQuiz[quizIndex];
+  quizQuestion.textContent = `(${quizIndex + 1}/10) ${data.q}`;
+
+  data.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = opt;
+
+    btn.onclick = () => {
+      if (!answered) checkAnswer(i);
+    };
+
+    quizOptions.appendChild(btn);
+  });
+}
+
+// =====================
+// CHECK ANSWER
+// =====================
+function checkAnswer(selected) {
+  answered = true;
+  const correct = selectedQuiz[quizIndex].answer;
+  const buttons = quizOptions.querySelectorAll("button");
+
+  buttons.forEach((btn, i) => {
+    if (i === correct) btn.classList.add("correct");
+    if (i === selected && selected !== correct) btn.classList.add("wrong");
+    btn.disabled = true;
+  });
+
+  if (selected === correct) {
+    score++;
+    quizResult.textContent = "✅ Jawaban benar!";
+    correctSound.currentTime = 0;
+    correctSound.play();
+  } else {
+    quizResult.textContent = "❌ Jawaban salah";
+    wrongSound.currentTime = 0;
+    wrongSound.play();
+  }
+}
+
+// =====================
+// NEXT QUESTION
+// =====================
+nextQuestionBtn.onclick = () => {
+  if (!answered) return;
+  quizIndex++;
+  loadQuiz();
+};
+
+// =====================
+// RESULT + EVALUASI
+// =====================
+function showResult() {
+  const percent = Math.round((score / selectedQuiz.length) * 100);
+
+  let evaluation = "";
+  if (percent >= 85) {
+    evaluation = "🌟 Luar biasa! Kamu sangat paham astronomi.";
+  } else if (percent >= 60) {
+    evaluation = "👍 Bagus! Pemahamanmu sudah cukup kuat.";
+  } else if (percent >= 40) {
+    evaluation = "🙂 Lumayan, tapi masih bisa ditingkatkan.";
+  } else {
+    evaluation = "📚 Jangan menyerah! Yuk belajar astronomi lagi.";
+  }
+
+  quizQuestion.textContent = "📊 Hasil Quiz";
+  quizOptions.innerHTML = `
+    <p><b>Skor:</b> ${score} / 10</p>
+    <p><b>Nilai:</b> ${percent}%</p>
+    <p style="margin-top:15px">${evaluation}</p>
+    <button onclick="startQuiz()">🔁 Main Lagi</button>
+  `;
+  quizResult.textContent = "";
+}
+
+// =====================
+// NAVIGATION
+// =====================
+quizBtn.addEventListener("click", () => {
+  intro.classList.remove("show");
+  quizContent.classList.add("show");
+  startQuiz();
+});
+
+aboutBtn.addEventListener("click", () => {
+  intro.classList.remove("show");
+  aboutContent.classList.add("show");
+});
+
+backQuizBtn.onclick = () => {
+  quizContent.classList.remove("show");
+  intro.classList.add("show");
+};
+
+backAboutBtn.onclick = () => {
+  aboutContent.classList.remove("show");
+  intro.classList.add("show");
+};
+
+
 </script>
+<style>
+  #quizOptions button.correct {
+  background: #1aff6c;
+  color: #000;
+}
+
+#quizOptions button.wrong {
+  background: #ff4d4d;
+  color: #000;
+}
+
+#quizOptions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+</style>
 
 </body>
 </html>
