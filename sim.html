@@ -599,24 +599,64 @@ sagA.userData.info = {
 skyGroup.add(sagA);
 
 
-  // ======================
-  // SUN
-  // ======================
-  const sunTexture = loader.load('sun.jpg'); // load texture Sun
-  sunTexture.colorSpace = THREE.SRGBColorSpace;
+// ======================
+// SUN
+// ======================
+const sunTexture = loader.load('sun.jpg'); // load texture Sun
+sunTexture.colorSpace = THREE.SRGBColorSpace;
 
-  const sun = new THREE.Mesh(
+const sun = new THREE.Mesh(
     new THREE.SphereGeometry(40, 32, 32),
-    new THREE.MeshBasicMaterial({ map: sunTexture }) // pakai map
-  );
+    new THREE.MeshBasicMaterial({ map: sunTexture })
+);
 
-  solarSystem.add(sun);
-  sun.userData.info = {
+solarSystem.add(sun);
+
+sun.userData.info = {
     title:"☀️ Sun",
     desc:"Bintang pusat Tata Surya",
     size:"Diameter 1.392.700 km",
     type:"Yellow Dwarf"
-  };
+};
+
+// ======================
+// Glow Sun
+// ======================
+function createColoredGlow(color, size = 256){
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    const c = size / 2;
+
+    const r = (color >> 16) & 0xff;
+    const g = (color >> 8) & 0xff;
+    const b = color & 0xff;
+
+    const gRad = ctx.createRadialGradient(c, c, 0, c, c, c);
+    gRad.addColorStop(0, `rgba(${r},${g},${b},1)`);
+    gRad.addColorStop(0.4, `rgba(${r},${g},${b},0.6)`);
+    gRad.addColorStop(1, "rgba(0,0,0,0)");
+
+    ctx.fillStyle = gRad;
+    ctx.fillRect(0, 0, size, size);
+
+    return new THREE.CanvasTexture(canvas);
+}
+
+// Glow kuning-oranye untuk Sun
+const sunGlowTex = createColoredGlow(0xffee99);
+const sunGlow = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+        map: sunGlowTex,
+        color: 0xffffff, // canvas sudah berwarna
+        transparent: true,
+        opacity: 0.7,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    })
+);
+sunGlow.scale.set(40 * 4, 40 * 4, 1); // sesuai size Sun
+sun.add(sunGlow);
 
   // ======================
   // PLANETS & MOON
@@ -780,102 +820,94 @@ skyGroup.add(pleiades);
 
 
 // ======================
-// ORION CONSTELLATION (Scientific) with Textures
+// ORION CONSTELLATION (Scientific) with Glow & Blink
 // ======================
 const orion = new THREE.Group();
 
-// Load texture loader
+// Loader
 const textureLoader = new THREE.TextureLoader();
 
+// Fungsi glow berwarna (reuse)
+function createColoredGlow(color, size = 256){
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  const c = size / 2;
+
+  const r = (color >> 16) & 0xff;
+  const g = (color >> 8) & 0xff;
+  const b = color & 0xff;
+
+  const gRad = ctx.createRadialGradient(c, c, 0, c, c, c);
+  gRad.addColorStop(0, `rgba(${r},${g},${b},1)`);
+  gRad.addColorStop(0.4, `rgba(${r},${g},${b},0.6)`);
+  gRad.addColorStop(1, "rgba(0,0,0,0)");
+
+  ctx.fillStyle = gRad;
+  ctx.fillRect(0, 0, size, size);
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+// Tambahkan info warna glow tiap bintang Orion
 const orionStars = [
   {
-    name: 'Betelgeuse (α Orionis)',
-    x: -50, y: 100, z: -100,
-    size: 22,
-    texture: 'red.png', // path ke tekstur
-    info: {
-      title: "⭐ Betelgeuse",
-      desc: "Bintang supergiant red, mendekati akhir hidupnya",
-      size: "Radius ±764× Matahari",
-      type: "Red Supergiant (M1–M2 Ia-ab)"
-    }
+    name: 'Betelgeuse', x:-50, y:100, z:-100, size:22, texture:'red.png', glowColor: 0xff5555,
+    info: { title:"⭐ Betelgeuse", desc:"Bintang supergiant red", size:"Radius ±764× Matahari", type:"Red Supergiant" }
   },
   {
-    name: 'Rigel (β Orionis)',
-    x: 40, y: 10, z: -210,
-    size: 20,
-    texture: 'white.png',
-    info: {
-      title: "⭐ Rigel",
-      desc: "Bintang supergiant biru-putih, sangat terang",
-      size: "Radius ±79× Matahari",
-      type: "Blue Supergiant (B8 Ia)"
-    }
+    name: 'Rigel', x:40, y:10, z:-210, size:20, texture:'white.png', glowColor: 0xaaddff,
+    info: { title:"⭐ Rigel", desc:"Bintang supergiant biru-putih", size:"Radius ±79× Matahari", type:"Blue Supergiant" }
   },
   {
-    name: 'Bellatrix (γ Orionis)',
-    x: 50, y: 80, z: -120,
-    size: 16,
-    texture: 'white.png',
-    info: {
-      title: "⭐ Bellatrix",
-      desc: "Bintang raksasa biru",
-      size: "Radius ±6× Matahari",
-      type: "Blue Giant (B2 III)"
-    }
+    name: 'Bellatrix', x:50, y:80, z:-120, size:16, texture:'white.png', glowColor: 0xaaddff,
+    info: { title:"⭐ Bellatrix", desc:"Bintang raksasa biru", size:"Radius ±6× Matahari", type:"Blue Giant" }
   },
   {
-    name: 'Alnitak (ζ Orionis)',
-    x: -30, y: 50, z: -160,
-    size: 13,
-    texture: 'white.png',
-    info: {
-      title: "⭐ Alnitak",
-      desc: "Salah satu bintang sabuk Orion",
-      size: "Radius ±20× Matahari",
-      type: "Blue Supergiant (O9.5 Ib)"
-    }
+    name: 'Alnitak', x:-30, y:50, z:-160, size:13, texture:'white.png', glowColor: 0xaaddff,
+    info: { title:"⭐ Alnitak", desc:"Salah satu bintang sabuk Orion", size:"Radius ±20× Matahari", type:"Blue Supergiant" }
   },
   {
-    name: 'Alnilam (ε Orionis)',
-    x: -10, y: 60, z: -150,
-    size: 13,
-    texture: 'white.png',
-    info: {
-      title: "⭐ Alnilam",
-      desc: "Bintang paling terang di sabuk Orion",
-      size: "Radius ±42× Matahari",
-      type: "Blue Supergiant (B0 Ia)"
-    }
+    name: 'Alnilam', x:-10, y:60, z:-150, size:13, texture:'white.png', glowColor: 0xaaddff,
+    info: { title:"⭐ Alnilam", desc:"Bintang paling terang di sabuk Orion", size:"Radius ±42× Matahari", type:"Blue Supergiant" }
   },
   {
-    name: 'Mintaka (δ Orionis)',
-    x: 10, y: 55, z: -155,
-    size: 13,
-    texture: 'white.png',
-    info: {
-      title: "⭐ Mintaka",
-      desc: "Sistem bintang multi di sabuk Orion",
-      size: "Multi-star system",
-      type: "O-type binary system"
-    }
+    name: 'Mintaka', x:10, y:55, z:-155, size:13, texture:'white.png', glowColor: 0xaaddff,
+    info: { title:"⭐ Mintaka", desc:"Sistem bintang multi di sabuk Orion", size:"Multi-star system", type:"O-type binary" }
   }
 ];
 
-// Buat bintang dengan tekstur
+const orionGlowObjects = []; // simpan glow untuk kedip
+
 orionStars.forEach(b => {
-  const texture = textureLoader.load(b.texture); // load tekstur eksternal
-  const starMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-  const star = new THREE.Mesh(
-    new THREE.SphereGeometry(b.size, 16, 16),
-    starMaterial
-  );
-  
+  // 🌟 Core star
+  const texture = textureLoader.load(b.texture);
+  const starMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent:true });
+  const star = new THREE.Mesh(new THREE.SphereGeometry(b.size,16,16), starMaterial);
+
   placeDeepObject(star, 4500);
   star.userData.info = b.info;
+
+  // ✨ Glow
+  const glowTex = createColoredGlow(b.glowColor);
+  const glow = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: glowTex,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    })
+  );
+  glow.scale.set(b.size*4, b.size*4, 1);
+  star.add(glow);
+
   orion.add(star);
+  orionGlowObjects.push(glow);
 });
 
+// letakkan Orion
 placeDeepObject(orion, 4000);
 orion.rotation.x = THREE.MathUtils.degToRad(23.4);
 skyGroup.add(orion);
@@ -932,8 +964,11 @@ solarSystem.add(asteroidGroup);
   // DEEP SPACE STARS
   // ======================
 
-  const deepStars = [
-  // ===== GALACTIC CORE REGION =====
+ // ======================
+// DATA DEEP STARS
+// ======================
+const deepStars = [
+  // ===== GALACTIC CORE =====
   { name:"S2", x:120, y:-40, z:80, size:10, texture:"bening.png" },
   { name:"S62", x:-90, y:60, z:-30, size:8, texture:"bening.png" },
   { name:"IRS 16C", x:200, y:150, z:-100, size:14, texture:"sun.jpg" },
@@ -948,7 +983,7 @@ solarSystem.add(asteroidGroup);
   { name:"Fomalhaut", x:5600, y:-2600, z:1800, size:20, texture:"bening.png" },
   { name:"Regulus", x:4300, y:900, z:-1700, size:19, texture:"bening.png" },
 
-  // ===== ORION REGION =====
+  // ===== ORION =====
   { name:"Meissa", x:6200, y:1400, z:-1200, size:22, texture:"white.png" },
   { name:"Propus (Eta Geminorum)", x:6400, y:1650, z:600, size:24, texture:"sun.jpg" },
   { name:"Bellatrix Minor", x:6600, y:1900, z:-300, size:20, texture:"white.png" },
@@ -971,30 +1006,10 @@ solarSystem.add(asteroidGroup);
   { name:"HD 140283 (Methuselah)", x:-15000, y:7000, z:-8000, size:13, texture:"sun.jpg" },
   { name:"Groombridge 1830", x:-13000, y:5000, z:3000, size:11, texture:"sun.jpg" },
 
-  // ===== MASSIVE / EXOTIC STARS =====
+  // ===== MASSIVE / EXOTIC =====
   { name:"Eta Carinae", x:7400, y:-2800, z:-3300, size:35, texture:"red.png" },
   { name:"WR 104", x:6800, y:3100, z:-2600, size:29, texture:"sun.jpg" },
   { name:"Pistol Star", x:400, y:300, z:-200, size:34, texture:"sun.jpg" },
-
-  // ===== BRIGHT GALACTIC DISK STARS =====
-  { name:"Achernar", x:8700, y:-3900, z:-1800, size:29, texture:"white.png" },
-  { name:"Canopus", x:9100, y:-4200, z:1200, size:31, texture:"sun.jpg" },
-  { name:"Hadar", x:9400, y:-3600, z:-2600, size:28, texture:"white.png" },
-  { name:"Acrux", x:9600, y:-3400, z:800, size:26, texture:"white.png" },
-  { name:"Mimosa", x:9550, y:-3300, z:-1400, size:27, texture:"white.png" },
-  { name:"Gacrux", x:9200, y:-3000, z:2100, size:25, texture:"sun.jpg" },
-
-  // ===== NEARBY =====
-  { name:"Lalande 21185", x:7900, y:-180, z:140, size:12, texture:"red.png" },
-  { name:"Ross 154", x:8000, y:-240, z:-200, size:11, texture:"red.png" },
-  { name:"Gliese 581", x:8150, y:260, z:180, size:12, texture:"red.png" },
-  { name:"Gliese 667 C", x:8250, y:300, z:-120, size:12, texture:"red.png" },
-
-  // ===== SOLAR-TYPE STARS =====
-  { name:"61 Cygni A", x:7700, y:-350, z:250, size:15, texture:"sun.jpg" },
-  { name:"61 Cygni B", x:7720, y:-330, z:270, size:14, texture:"sun.jpg" },
-  { name:"Chi Draconis", x:8400, y:900, z:600, size:16, texture:"sun.jpg" },
-  { name:"Sigma Draconis", x:8600, y:700, z:400, size:15, texture:"sun.jpg" },
 
   // ===== GIANTS & SUPERGIANTS =====
   { name:"R Doradus", x:4800, y:-2600, z:-900, size:30, texture:"red.png" },
@@ -1003,67 +1018,50 @@ solarSystem.add(asteroidGroup);
   { name:"S Doradus", x:8200, y:-3500, z:-4200, size:34, texture:"red.png" },
   { name:"VY Canis Majoris", x:5400, y:-4100, z:1200, size:38, texture:"red.png" },
 
-  // ===== OUTER DISK =====
-  { name:"Gamma Velorum", x:11000, y:-4800, z:900, size:30, texture:"sun.jpg" },
-  { name:"Zeta Puppis", x:10800, y:-5200, z:-1700, size:29, texture:"white.png" },
-  { name:"Naos", x:11500, y:-5500, z:2400, size:31, texture:"white.png" },
-  { name:"Wezen", x:11200, y:-4600, z:-3200, size:30, texture:"sun.jpg" },
-
-  // ===== OLD / HALO POPULATION =====
-  { name:"BD+17°3248", x:-16000, y:8200, z:-7400, size:12, texture:"sun.jpg" },
-  { name:"HD 140283 (Methuselah)", x:-15000, y:7000, z:-10500, size:13, texture:"sun.jpg" },
-  { name:"HE 1523-0901", x:-18000, y:9500, z:9800, size:11, texture:"sun.jpg" },
-  { name:"CS 22892-052", x:-17000, y:8800, z:-7600, size:12, texture:"sun.jpg" },
-
-  // ===== MASSIVE CLUSTER STARS =====
-  { name:"R136a1", x:14000, y:-6200, z:-5100, size:40, texture:"bening.png" },
-  { name:"R136a2", x:14100, y:-6150, z:-5050, size:38, texture:"bening.png" },
-  { name:"NGC 3603-A1", x:12500, y:5800, z:4700, size:37, texture:"bening.png" },
-  { name:"WR 25", x:11800, y:-5000, z:-4300, size:32, texture:"sun.jpg" },
-
-  // ===== EXTENDED GALACTIC DISK =====
-  { name:"Alpheratz", x:9800, y:2200, z:1200, size:23, texture:"white.png" },
-  { name:"Mirach", x:9600, y:2400, z:1400, size:24, texture:"sun.jpg" },
-  { name:"Enif", x:10100, y:1800, z:-900, size:26, texture:"sun.jpg" },
-  { name:"Markab", x:9900, y:1600, z:-1100, size:22, texture:"bening.png" },
-  { name:"Sadalmelik", x:10400, y:2600, z:1900, size:25, texture:"sun.jpg" },
-
-  // ===== SOUTHERN SKY =====
-  { name:"Alpha Pavonis", x:9200, y:-4800, z:-3600, size:24, texture:"white.png" },
-  { name:"Beta Hydri", x:8800, y:-5200, z:-3900, size:21, texture:"sun.jpg" },
-  { name:"Gamma Tucanae", x:9100, y:-5500, z:-4200, size:22, texture:"bening.png" },
-
-  // ===== OLD DISK / THICK DISK =====
-  { name:"HD 84937", x:-11000, y:5200, z:-4300, size:13, texture:"sun.jpg" },
-  { name:"HD 19445", x:-10500, y:4900, z:-4100, size:13, texture:"sun.jpg" },
-  { name:"HD 94028", x:-9800, y:4600, z:-3800, size:14, texture:"sun.jpg" },
-
-  // ===== MASSIVE CLUSTERS =====
-  { name:"NGC 6611-205", x:6200, y:-2800, z:-900, size:30, texture:"bening.png" },
-  { name:"NGC 6611-367", x:6400, y:-3000, z:400, size:29, texture:"bening.png" },
-  { name:"Westerlund 1-26", x:7200, y:-3300, z:-2200, size:37, texture:"red.png" },
-
-  // ===== GALACTIC BULGE =====
-  { name:"OGLE-TR-56", x:900, y:-400, z:300, size:15, texture:"sun.jpg" },
-  { name:"OGLE-2005-BLG-390", x:1100, y:-600, z:500, size:14, texture:"sun.jpg" },
-
   // ===== RARE OBJECTS =====
   { name:"UY Scuti", x:6800, y:-2900, z:-2100, size:40, texture:"red.png" },
   { name:"RW Cephei", x:6600, y:3100, z:3800, size:35, texture:"red.png" },
   { name:"IRC +10420", x:5900, y:2700, z:3400, size:34, texture:"red.png" },
 ];
 
+// ======================
+// DEEP STARS DENGAN GLOW & KEDIP WARNA OTOMATIS
+// ======================
+
 const GALAXY_OFFSET_X = 7000;
+const deepStarsGlowObjects = []; // simpan glow untuk animasi kedip
 const starMap = {};
 
-deepStars.forEach(b => {
-    // load tekstur unik per bintang
-    const texture = textureLoader.load(b.texture);
-    const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+function createColoredGlow(color, size = 256){
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    const c = size / 2;
 
+    const r = (color >> 16) & 0xff;
+    const g = (color >> 8) & 0xff;
+    const b = color & 0xff;
+
+    const gRad = ctx.createRadialGradient(c, c, 0, c, c, c);
+    gRad.addColorStop(0, `rgba(${r},${g},${b},1)`);
+    gRad.addColorStop(0.4, `rgba(${r},${g},${b},0.6)`);
+    gRad.addColorStop(1, "rgba(0,0,0,0)");
+
+    ctx.fillStyle = gRad;
+    ctx.fillRect(0, 0, size, size);
+
+    return new THREE.CanvasTexture(canvas);
+}
+
+// Loop deepStars
+deepStars.forEach(b => {
+    // 🌟 Core star
     const star = new THREE.Mesh(
         new THREE.SphereGeometry(b.size, 16, 16),
-        material
+        new THREE.MeshBasicMaterial({
+            map: textureLoader.load(b.texture),
+            transparent: true
+        })
     );
 
     star.position.set(b.x - GALAXY_OFFSET_X, b.y, b.z);
@@ -1076,9 +1074,32 @@ deepStars.forEach(b => {
     star.userData.info = {
         title: "⭐ " + b.name,
         desc: "Bintang luar Tata Surya",
-        size: "Ukuran visual",
+        size: "Ukuran visual: " + b.size,
         type: "Star"
     };
+
+    // ======= Warna glow otomatis berdasarkan texture =======
+    let colorHex = 0xffffff; // default putih
+    if(b.texture.includes("red")) colorHex = 0xff4444;
+    else if(b.texture.includes("bening")) colorHex = 0x99ccff;
+    else if(b.texture.includes("white")) colorHex = 0xffffff;
+    else if(b.texture.includes("sun")) colorHex = 0xffee99;
+
+    const glowTex = createColoredGlow(colorHex);
+    const glow = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+            map: glowTex,
+            color: 0xffffff, // putih karena canvas sudah berwarna
+            transparent: true,
+            opacity: 0.7,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        })
+    );
+    glow.scale.set(b.size * 4, b.size * 4, 1);
+    star.add(glow);
+
+    deepStarsGlowObjects.push(glow);
 
     skyGroup.add(star);
     starMap[b.name] = star;
@@ -1291,21 +1312,68 @@ skyGroup.add(nebula);
       earthMesh.add(issModel);
     }  
   );
-  const extraStars = [
-  { name:'Alpha Centauri A', x:700, y:150, z:-1800, size:22, texture:"sun.jpg" },
-  { name:'Alpha Centauri B', x:730, y:140, z:-1820, size:18, texture:"sun.jpg" },
-  { name:'Barnard Star', x:-900, y:200, z:-2000, size:12, texture:"sun.jpg" },
-  { name:'Wolf 359', x:-1200, y:100, z:-2200, size:10, texture:"red.png" }
+// ======================
+// EXTRA STARS DENGAN GLOW & KEDIP WARNA SESUAI
+// ======================
+const extraStars = [
+  { name:'Alpha Centauri A', x:700, y:150, z:-1800, size:22, texture:"sun.jpg", glowColor: 0xffee99 },
+  { name:'Alpha Centauri B', x:730, y:140, z:-1820, size:18, texture:"sun.jpg", glowColor: 0xffee99 },
+  { name:'Barnard Star', x:-900, y:200, z:-2000, size:12, texture:"sun.jpg", glowColor: 0xffee99 },
+  { name:'Wolf 359', x:-1200, y:100, z:-2200, size:10, texture:"red.png", glowColor: 0xff5555 }
 ];
 
-// Pastikan ada loader
+// Fungsi buat glow dengan warna custom
+function createColoredGlow(color, size = 256){
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  const c = size / 2;
+
+  const r = (color >> 16) & 0xff;
+  const g = (color >> 8) & 0xff;
+  const b = color & 0xff;
+
+  const gRad = ctx.createRadialGradient(c, c, 0, c, c, c);
+  gRad.addColorStop(0, `rgba(${r},${g},${b},1)`);
+  gRad.addColorStop(0.4, `rgba(${r},${g},${b},0.6)`);
+  gRad.addColorStop(1, "rgba(0,0,0,0)");
+
+  ctx.fillStyle = gRad;
+  ctx.fillRect(0, 0, size, size);
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+// Clock untuk animasi kedip
+const clock = new THREE.Clock();
+const extraStarObjects = []; // simpan glow untuk animasi kedip
+
 extraStars.forEach(b => {
+  // 🌟 Core star
   const star = new THREE.Mesh(
     new THREE.SphereGeometry(b.size, 16, 16),
-    new THREE.MeshBasicMaterial({ map: textureLoader.load(b.texture) })
+    new THREE.MeshBasicMaterial({ 
+      map: textureLoader.load(b.texture),
+      transparent: true
+    })
   );
 
   placeDeepObject(star, 4500);
+
+  // ✨ Glow sesuai warna bintang
+  const glowTex = createColoredGlow(b.glowColor);
+  const glow = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: glowTex,
+      color: 0xffffff, // putih karena texture sudah berwarna
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    })
+  );
+  glow.scale.set(b.size*4, b.size*4, 1);
+  star.add(glow);
 
   star.userData.info = {
     title:"⭐ " + b.name,
@@ -1315,6 +1383,8 @@ extraStars.forEach(b => {
   };
 
   skyGroup.add(star);
+
+  extraStarObjects.push(glow);
 });
 
 
