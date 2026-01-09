@@ -199,12 +199,12 @@ Time Speed<br>
     player = new YT.Player('player', {
       height: '0',
       width: '0',
-      videoId: 'cOLhHTsPbDg',
+      videoId: 'GrQpcI0DdyU',
       playerVars: {
         autoplay: 1, 
         controls: 0,
         loop: 1,
-        playlist: 'cOLhHTsPbDg',
+        playlist: 'GrQpcI0DdyU',
         modestbranding: 1,
         rel: 0,
         iv_load_policy: 3
@@ -593,7 +593,7 @@ sagA.userData.info = {
   desc: "Supermassive black hole di pusat Galaksi Bima Sakti",
   size: "Massa ±4,1 juta Matahari",
   type: "Galactic Center Black Hole",
-  image:"https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg"
+  image:"https://threejs.org/examples/planets/earth_atmos_2048.jpg"
 };
 
 skyGroup.add(sagA);
@@ -624,7 +624,7 @@ skyGroup.add(sagA);
   const PLANETS = [
   {name:'Mercury', size:3,  a:60,  e:0.205, speed:4.15, tex:'merkurius.jpg'},
   {name:'Venus',   size:6,  a:90,  e:0.007, speed:1.62, tex:'venusmap.jpg'},
-  {name:'Earth',   size:6.5,a:130, e:0.017, speed:1.00, tex:'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg'},
+  {name:'Earth',   size:6.5,a:130, e:0.017, speed:1.00, tex:'https://threejs.org/examples/planets/earth_atmos_2048.jpg'},
   {name:'Mars',    size:4.5,a:170, e:0.093, speed:0.53, tex:'mars.jpg'},
   {name:'Jupiter', size:14, a:230, e:0.049, speed:0.084, tex:'jupitermap.jpg'},
   {name:'Saturn',  size:12, a:300, e:0.056, speed:0.034, tex:'saturnmap.jpg'},
@@ -671,7 +671,7 @@ skyGroup.add(sagA);
   });
 
   // MOON
-  const moonTex = loader.load('https://threejs.org/examples/textures/planets/moon_1024.jpg');
+  const moonTex = loader.load('https://threejs.org/examples/planets/moon_1024.jpg');
   moonTex.colorSpace = THREE.SRGBColorSpace;
   const moon = new THREE.Mesh(new THREE.SphereGeometry(1.8,32,32), new THREE.MeshBasicMaterial({ map:moonTex }));
   earthMesh.add(moon);
@@ -780,19 +780,22 @@ skyGroup.add(pleiades);
 
 
 // ======================
-// ORION CONSTELLATION (Scientific)
+// ORION CONSTELLATION (Scientific) with Textures
 // ======================
 const orion = new THREE.Group();
+
+// Load texture loader
+const textureLoader = new THREE.TextureLoader();
 
 const orionStars = [
   {
     name: 'Betelgeuse (α Orionis)',
     x: -50, y: 100, z: -100,
     size: 22,
-    color: 0xffaa33,
+    texture: 'red.png', // path ke tekstur
     info: {
       title: "⭐ Betelgeuse",
-      desc: "Bintang supergiant merah, mendekati akhir hidupnya",
+      desc: "Bintang supergiant red, mendekati akhir hidupnya",
       size: "Radius ±764× Matahari",
       type: "Red Supergiant (M1–M2 Ia-ab)"
     }
@@ -801,7 +804,7 @@ const orionStars = [
     name: 'Rigel (β Orionis)',
     x: 40, y: 10, z: -210,
     size: 20,
-    color: 0x88ccff,
+    texture: 'white.png',
     info: {
       title: "⭐ Rigel",
       desc: "Bintang supergiant biru-putih, sangat terang",
@@ -813,7 +816,7 @@ const orionStars = [
     name: 'Bellatrix (γ Orionis)',
     x: 50, y: 80, z: -120,
     size: 16,
-    color: 0xffffff,
+    texture: 'white.png',
     info: {
       title: "⭐ Bellatrix",
       desc: "Bintang raksasa biru",
@@ -825,7 +828,7 @@ const orionStars = [
     name: 'Alnitak (ζ Orionis)',
     x: -30, y: 50, z: -160,
     size: 13,
-    color: 0x99ccff,
+    texture: 'white.png',
     info: {
       title: "⭐ Alnitak",
       desc: "Salah satu bintang sabuk Orion",
@@ -837,7 +840,7 @@ const orionStars = [
     name: 'Alnilam (ε Orionis)',
     x: -10, y: 60, z: -150,
     size: 13,
-    color: 0x99ccff,
+    texture: 'white.png',
     info: {
       title: "⭐ Alnilam",
       desc: "Bintang paling terang di sabuk Orion",
@@ -849,7 +852,7 @@ const orionStars = [
     name: 'Mintaka (δ Orionis)',
     x: 10, y: 55, z: -155,
     size: 13,
-    color: 0x99ccff,
+    texture: 'white.png',
     info: {
       title: "⭐ Mintaka",
       desc: "Sistem bintang multi di sabuk Orion",
@@ -859,12 +862,16 @@ const orionStars = [
   }
 ];
 
+// Buat bintang dengan tekstur
 orionStars.forEach(b => {
+  const texture = textureLoader.load(b.texture); // load tekstur eksternal
+  const starMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
   const star = new THREE.Mesh(
     new THREE.SphereGeometry(b.size, 16, 16),
-    new THREE.MeshBasicMaterial({ color: b.color })
+    starMaterial
   );
-placeDeepObject(star, 4500);
+  
+  placeDeepObject(star, 4500);
   star.userData.info = b.info;
   orion.add(star);
 });
@@ -872,6 +879,7 @@ placeDeepObject(star, 4500);
 placeDeepObject(orion, 4000);
 orion.rotation.x = THREE.MathUtils.degToRad(23.4);
 skyGroup.add(orion);
+
 
 
   const blackHole = new THREE.Mesh(new THREE.SphereGeometry(140,32,32), new THREE.MeshBasicMaterial({ color:0x000000 }));
@@ -925,156 +933,156 @@ solarSystem.add(asteroidGroup);
   // ======================
 
   const deepStars = [
-// ===== GALACTIC CORE REGION =====
-{ name:"S2", x:120, y:-40, z:80, size:10, color:0xffffff },
-{ name:"S62", x:-90, y:60, z:-30, size:8, color:0xffffff },
-{ name:"IRS 16C", x:200, y:150, z:-100, size:14, color:0xfff0cc },
-{ name:"IRS 13E", x:-180, y:90, z:130, size:12, color:0xffeedd },
-{ name:"S4711", x:70, y:-120, z:60, size:7, color:0xffffff },
+  // ===== GALACTIC CORE REGION =====
+  { name:"S2", x:120, y:-40, z:80, size:10, texture:"bening.png" },
+  { name:"S62", x:-90, y:60, z:-30, size:8, texture:"bening.png" },
+  { name:"IRS 16C", x:200, y:150, z:-100, size:14, texture:"sun.jpg" },
+  { name:"IRS 13E", x:-180, y:90, z:130, size:12, texture:"sun.jpg" },
+  { name:"S4711", x:70, y:-120, z:60, size:7, texture:"bening.png" },
 
-// ===== INNER MILKY WAY =====
-{ name:"Arcturus", x:3200, y:-1800, z:900, size:22, color:0xffcc99 },
-{ name:"Aldebaran", x:4100, y:2200, z:-1200, size:24, color:0xffaa77 },
-{ name:"Antares", x:5200, y:-900, z:-2400, size:28, color:0xff5533 },
-{ name:"Spica", x:4800, y:1600, z:2100, size:21, color:0xbbeeff },
-{ name:"Fomalhaut", x:5600, y:-2600, z:1800, size:20, color:0xffffff },
-{ name:"Regulus", x:4300, y:900, z:-1700, size:19, color:0xffffff },
+  // ===== INNER MILKY WAY =====
+  { name:"Arcturus", x:3200, y:-1800, z:900, size:22, texture:"sun.jpg" },
+  { name:"Aldebaran", x:4100, y:2200, z:-1200, size:24, texture:"sun.jpg" },
+  { name:"Antares", x:5200, y:-900, z:-2400, size:28, texture:"red.png" },
+  { name:"Spica", x:4800, y:1600, z:2100, size:21, texture:"white.png" },
+  { name:"Fomalhaut", x:5600, y:-2600, z:1800, size:20, texture:"bening.png" },
+  { name:"Regulus", x:4300, y:900, z:-1700, size:19, texture:"bening.png" },
 
-// ===== ORION REGION (PENGGANTI TOTAL) =====
-{ name:"Meissa", x:6200, y:1400, z:-1200, size:22, color:0xbbccff },
-{ name:"Propus (Eta Geminorum)", x:6400, y:1650, z:600, size:24, color:0xffaa77 },
-{ name:"Bellatrix Minor", x:6600, y:1900, z:-300, size:20, color:0xccccff },
+  // ===== ORION REGION =====
+  { name:"Meissa", x:6200, y:1400, z:-1200, size:22, texture:"white.png" },
+  { name:"Propus (Eta Geminorum)", x:6400, y:1650, z:600, size:24, texture:"sun.jpg" },
+  { name:"Bellatrix Minor", x:6600, y:1900, z:-300, size:20, texture:"white.png" },
 
-// ===== LOCAL ARM =====
-{ name:"Sirius", x:8200, y:200, z:-300, size:25, color:0xffffff },
-{ name:"Procyon", x:8300, y:500, z:200, size:20, color:0xffffdd },
-{ name:"Vega", x:9000, y:1100, z:3200, size:22, color:0x99ccff },
-{ name:"Altair", x:8800, y:-900, z:2100, size:18, color:0xffffff },
-{ name:"Deneb", x:10200, y:3000, z:5400, size:32, color:0xccccff },
-{ name:"Epsilon Eridani", x:7800, y:-400, z:900, size:15, color:0xffffcc },
-{ name:"Tau Ceti", x:7600, y:300, z:-800, size:14, color:0xffffaa },
-{ name:"Kapella", x:9500, y:2200, z:-1200, size:27, color:0xffeecc },
-{ name:"Castor", x:9100, y:1500, z:-900, size:19, color:0xffffff },
-{ name:"Pollux", x:9300, y:1700, z:-1100, size:21, color:0xffcc99 },
+  // ===== LOCAL ARM =====
+  { name:"Sirius", x:8200, y:200, z:-300, size:25, texture:"bening.png" },
+  { name:"Procyon", x:8300, y:500, z:200, size:20, texture:"sun.jpg" },
+  { name:"Vega", x:9000, y:1100, z:3200, size:22, texture:"white.png" },
+  { name:"Altair", x:8800, y:-900, z:2100, size:18, texture:"bening.png" },
+  { name:"Deneb", x:10200, y:3000, z:5400, size:32, texture:"white.png" },
+  { name:"Epsilon Eridani", x:7800, y:-400, z:900, size:15, texture:"sun.jpg" },
+  { name:"Tau Ceti", x:7600, y:300, z:-800, size:14, texture:"sun.jpg" },
+  { name:"Kapella", x:9500, y:2200, z:-1200, size:27, texture:"sun.jpg" },
+  { name:"Castor", x:9100, y:1500, z:-900, size:19, texture:"bening.png" },
+  { name:"Pollux", x:9300, y:1700, z:-1100, size:21, texture:"sun.jpg" },
 
-// ===== HALO STARS =====
-{ name:"Kapteyn’s Star", x:-12000, y:4000, z:-6000, size:14, color:0xffaa77 },
-{ name:"Luyten 726-8", x:-8800, y:-2600, z:1800, size:11, color:0xff6633 },
-{ name:"HD 140283 (Methuselah)", x:-15000, y:7000, z:-8000, size:13, color:0xffffcc },
-{ name:"Groombridge 1830", x:-13000, y:5000, z:3000, size:11, color:0xffccaa },
+  // ===== HALO STARS =====
+  { name:"Kapteyn’s Star", x:-12000, y:4000, z:-6000, size:14, texture:"sun.jpg" },
+  { name:"Luyten 726-8", x:-8800, y:-2600, z:1800, size:11, texture:"red.png" },
+  { name:"HD 140283 (Methuselah)", x:-15000, y:7000, z:-8000, size:13, texture:"sun.jpg" },
+  { name:"Groombridge 1830", x:-13000, y:5000, z:3000, size:11, texture:"sun.jpg" },
 
-// ===== MASSIVE / EXOTIC STARS =====
-{ name:"Eta Carinae", x:7400, y:-2800, z:-3300, size:35, color:0xffaa66 },
-{ name:"WR 104", x:6800, y:3100, z:-2600, size:29, color:0xffccaa },
-{ name:"Pistol Star", x:400, y:300, z:-200, size:34, color:0xffddaa },
-// ===== BRIGHT GALACTIC DISK STARS =====
-{ name:"Achernar", x:8700, y:-3900, z:-1800, size:29, color:0x99ccff },
-{ name:"Canopus", x:9100, y:-4200, z:1200, size:31, color:0xffeecc },
-{ name:"Hadar", x:9400, y:-3600, z:-2600, size:28, color:0xbbeeff },
-{ name:"Acrux", x:9600, y:-3400, z:800, size:26, color:0xbbddff },
-{ name:"Mimosa", x:9550, y:-3300, z:-1400, size:27, color:0xbbccff },
-{ name:"Gacrux", x:9200, y:-3000, z:2100, size:25, color:0xffaa77 },
+  // ===== MASSIVE / EXOTIC STARS =====
+  { name:"Eta Carinae", x:7400, y:-2800, z:-3300, size:35, texture:"red.png" },
+  { name:"WR 104", x:6800, y:3100, z:-2600, size:29, texture:"sun.jpg" },
+  { name:"Pistol Star", x:400, y:300, z:-200, size:34, texture:"sun.jpg" },
 
+  // ===== BRIGHT GALACTIC DISK STARS =====
+  { name:"Achernar", x:8700, y:-3900, z:-1800, size:29, texture:"white.png" },
+  { name:"Canopus", x:9100, y:-4200, z:1200, size:31, texture:"sun.jpg" },
+  { name:"Hadar", x:9400, y:-3600, z:-2600, size:28, texture:"white.png" },
+  { name:"Acrux", x:9600, y:-3400, z:800, size:26, texture:"white.png" },
+  { name:"Mimosa", x:9550, y:-3300, z:-1400, size:27, texture:"white.png" },
+  { name:"Gacrux", x:9200, y:-3000, z:2100, size:25, texture:"sun.jpg" },
 
-// ===== NEARBY (BUT NOT FORBIDDEN ONES) =====
-{ name:"Lalande 21185", x:7900, y:-180, z:140, size:12, color:0xff6633 },
-{ name:"Ross 154", x:8000, y:-240, z:-200, size:11, color:0xff5522 },
-{ name:"Gliese 581", x:8150, y:260, z:180, size:12, color:0xff7744 },
-{ name:"Gliese 667 C", x:8250, y:300, z:-120, size:12, color:0xff6644 },
+  // ===== NEARBY =====
+  { name:"Lalande 21185", x:7900, y:-180, z:140, size:12, texture:"red.png" },
+  { name:"Ross 154", x:8000, y:-240, z:-200, size:11, texture:"red.png" },
+  { name:"Gliese 581", x:8150, y:260, z:180, size:12, texture:"red.png" },
+  { name:"Gliese 667 C", x:8250, y:300, z:-120, size:12, texture:"red.png" },
 
-// ===== SOLAR-TYPE STARS =====
-{ name:"61 Cygni A", x:7700, y:-350, z:250, size:15, color:0xffcc99 },
-{ name:"61 Cygni B", x:7720, y:-330, z:270, size:14, color:0xffbb88 },
-{ name:"Chi Draconis", x:8400, y:900, z:600, size:16, color:0xffffdd },
-{ name:"Sigma Draconis", x:8600, y:700, z:400, size:15, color:0xffffcc },
+  // ===== SOLAR-TYPE STARS =====
+  { name:"61 Cygni A", x:7700, y:-350, z:250, size:15, texture:"sun.jpg" },
+  { name:"61 Cygni B", x:7720, y:-330, z:270, size:14, texture:"sun.jpg" },
+  { name:"Chi Draconis", x:8400, y:900, z:600, size:16, texture:"sun.jpg" },
+  { name:"Sigma Draconis", x:8600, y:700, z:400, size:15, texture:"sun.jpg" },
 
-// ===== GIANTS & SUPERGIANTS (NON-ORION) =====
-{ name:"R Doradus", x:4800, y:-2600, z:-900, size:30, color:0xff5533 },
-{ name:"Mu Cephei", x:6100, y:2900, z:3400, size:33, color:0xff4422 },
-{ name:"VV Cephei", x:7000, y:3300, z:4100, size:36, color:0xff3311 },
-{ name:"S Doradus", x:8200, y:-3500, z:-4200, size:34, color:0xffaa66 },
-{ name:"VY Canis Majoris", x:5400, y:-4100, z:1200, size:38, color:0xff2200 },
+  // ===== GIANTS & SUPERGIANTS =====
+  { name:"R Doradus", x:4800, y:-2600, z:-900, size:30, texture:"red.png" },
+  { name:"Mu Cephei", x:6100, y:2900, z:3400, size:33, texture:"red.png" },
+  { name:"VV Cephei", x:7000, y:3300, z:4100, size:36, texture:"red.png" },
+  { name:"S Doradus", x:8200, y:-3500, z:-4200, size:34, texture:"red.png" },
+  { name:"VY Canis Majoris", x:5400, y:-4100, z:1200, size:38, texture:"red.png" },
 
-// ===== OUTER DISK =====
-{ name:"Gamma Velorum", x:11000, y:-4800, z:900, size:30, color:0xffccaa },
-{ name:"Zeta Puppis", x:10800, y:-5200, z:-1700, size:29, color:0xaaddff },
-{ name:"Naos", x:11500, y:-5500, z:2400, size:31, color:0xbbddff },
-{ name:"Wezen", x:11200, y:-4600, z:-3200, size:30, color:0xffddaa },
+  // ===== OUTER DISK =====
+  { name:"Gamma Velorum", x:11000, y:-4800, z:900, size:30, texture:"sun.jpg" },
+  { name:"Zeta Puppis", x:10800, y:-5200, z:-1700, size:29, texture:"white.png" },
+  { name:"Naos", x:11500, y:-5500, z:2400, size:31, texture:"white.png" },
+  { name:"Wezen", x:11200, y:-4600, z:-3200, size:30, texture:"sun.jpg" },
 
+  // ===== OLD / HALO POPULATION =====
+  { name:"BD+17°3248", x:-16000, y:8200, z:-7400, size:12, texture:"sun.jpg" },
+  { name:"HD 140283 (Methuselah)", x:-15000, y:7000, z:-10500, size:13, texture:"sun.jpg" },
+  { name:"HE 1523-0901", x:-18000, y:9500, z:9800, size:11, texture:"sun.jpg" },
+  { name:"CS 22892-052", x:-17000, y:8800, z:-7600, size:12, texture:"sun.jpg" },
 
-// ===== OLD / HALO POPULATION =====
-{ name:"BD+17°3248", x:-16000, y:8200, z:-7400, size:12, color:0xffffcc },
-{ name:"HD 140283 (Methuselah)", x:-15000, y:7000, z:-10500, size:13, color:0xffffcc },
-{ name:"HE 1523-0901", x:-18000, y:9500, z:9800, size:11, color:0xffffaa },
-{ name:"CS 22892-052", x:-17000, y:8800, z:-7600, size:12, color:0xffeecc },
+  // ===== MASSIVE CLUSTER STARS =====
+  { name:"R136a1", x:14000, y:-6200, z:-5100, size:40, texture:"bening.png" },
+  { name:"R136a2", x:14100, y:-6150, z:-5050, size:38, texture:"bening.png" },
+  { name:"NGC 3603-A1", x:12500, y:5800, z:4700, size:37, texture:"bening.png" },
+  { name:"WR 25", x:11800, y:-5000, z:-4300, size:32, texture:"sun.jpg" },
 
+  // ===== EXTENDED GALACTIC DISK =====
+  { name:"Alpheratz", x:9800, y:2200, z:1200, size:23, texture:"white.png" },
+  { name:"Mirach", x:9600, y:2400, z:1400, size:24, texture:"sun.jpg" },
+  { name:"Enif", x:10100, y:1800, z:-900, size:26, texture:"sun.jpg" },
+  { name:"Markab", x:9900, y:1600, z:-1100, size:22, texture:"bening.png" },
+  { name:"Sadalmelik", x:10400, y:2600, z:1900, size:25, texture:"sun.jpg" },
 
-// ===== MASSIVE CLUSTER STARS =====
-{ name:"R136a1", x:14000, y:-6200, z:-5100, size:40, color:0xffffff },
-{ name:"R136a2", x:14100, y:-6150, z:-5050, size:38, color:0xffffff },
-{ name:"NGC 3603-A1", x:12500, y:5800, z:4700, size:37, color:0xffffff },
-{ name:"WR 25", x:11800, y:-5000, z:-4300, size:32, color:0xffccaa },
-// ===== EXTENDED GALACTIC DISK =====
-{ name:"Alpheratz", x:9800, y:2200, z:1200, size:23, color:0xbbeeff },
-{ name:"Mirach", x:9600, y:2400, z:1400, size:24, color:0xffaa77 },
-{ name:"Enif", x:10100, y:1800, z:-900, size:26, color:0xffcc99 },
-{ name:"Markab", x:9900, y:1600, z:-1100, size:22, color:0xffffff },
-{ name:"Sadalmelik", x:10400, y:2600, z:1900, size:25, color:0xffffcc },
+  // ===== SOUTHERN SKY =====
+  { name:"Alpha Pavonis", x:9200, y:-4800, z:-3600, size:24, texture:"white.png" },
+  { name:"Beta Hydri", x:8800, y:-5200, z:-3900, size:21, texture:"sun.jpg" },
+  { name:"Gamma Tucanae", x:9100, y:-5500, z:-4200, size:22, texture:"bening.png" },
 
-// ===== SOUTHERN SKY =====
-{ name:"Alpha Pavonis", x:9200, y:-4800, z:-3600, size:24, color:0xbbeeff },
-{ name:"Beta Hydri", x:8800, y:-5200, z:-3900, size:21, color:0xffffcc },
-{ name:"Gamma Tucanae", x:9100, y:-5500, z:-4200, size:22, color:0xffffff },
+  // ===== OLD DISK / THICK DISK =====
+  { name:"HD 84937", x:-11000, y:5200, z:-4300, size:13, texture:"sun.jpg" },
+  { name:"HD 19445", x:-10500, y:4900, z:-4100, size:13, texture:"sun.jpg" },
+  { name:"HD 94028", x:-9800, y:4600, z:-3800, size:14, texture:"sun.jpg" },
 
-// ===== OLD DISK / THICK DISK =====
-{ name:"HD 84937", x:-11000, y:5200, z:-4300, size:13, color:0xffffcc },
-{ name:"HD 19445", x:-10500, y:4900, z:-4100, size:13, color:0xffffdd },
-{ name:"HD 94028", x:-9800, y:4600, z:-3800, size:14, color:0xffffaa },
+  // ===== MASSIVE CLUSTERS =====
+  { name:"NGC 6611-205", x:6200, y:-2800, z:-900, size:30, texture:"bening.png" },
+  { name:"NGC 6611-367", x:6400, y:-3000, z:400, size:29, texture:"bening.png" },
+  { name:"Westerlund 1-26", x:7200, y:-3300, z:-2200, size:37, texture:"red.png" },
 
-// ===== MASSIVE CLUSTERS =====
-{ name:"NGC 6611-205", x:6200, y:-2800, z:-900, size:30, color:0xffffff },
-{ name:"NGC 6611-367", x:6400, y:-3000, z:400, size:29, color:0xffffff },
-{ name:"Westerlund 1-26", x:7200, y:-3300, z:-2200, size:37, color:0xff3322 },
+  // ===== GALACTIC BULGE =====
+  { name:"OGLE-TR-56", x:900, y:-400, z:300, size:15, texture:"sun.jpg" },
+  { name:"OGLE-2005-BLG-390", x:1100, y:-600, z:500, size:14, texture:"sun.jpg" },
 
-
-// ===== GALACTIC BULGE =====
-{ name:"OGLE-TR-56", x:900, y:-400, z:300, size:15, color:0xffffcc },
-{ name:"OGLE-2005-BLG-390", x:1100, y:-600, z:500, size:14, color:0xffffaa },
-
-// ===== RARE OBJECTS (STARS ONLY) =====
-{ name:"UY Scuti", x:6800, y:-2900, z:-2100, size:40, color:0xff2200 },
-{ name:"RW Cephei", x:6600, y:3100, z:3800, size:35, color:0xff4422 },
-{ name:"IRC +10420", x:5900, y:2700, z:3400, size:34, color:0xffaa66 } ,
+  // ===== RARE OBJECTS =====
+  { name:"UY Scuti", x:6800, y:-2900, z:-2100, size:40, texture:"red.png" },
+  { name:"RW Cephei", x:6600, y:3100, z:3800, size:35, texture:"red.png" },
+  { name:"IRC +10420", x:5900, y:2700, z:3400, size:34, texture:"red.png" },
 ];
-const GALAXY_OFFSET_X = 7000; // titik tengah data kamu
 
+const GALAXY_OFFSET_X = 7000;
 const starMap = {};
+
 deepStars.forEach(b => {
-const star = new THREE.Mesh(
-new THREE.SphereGeometry(b.size, 16, 16),
-new THREE.MeshBasicMaterial({ color: b.color })
-);
+    // load tekstur unik per bintang
+    const texture = textureLoader.load(b.texture);
+    const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
 
-star.position.set(b.x - GALAXY_OFFSET_X, b.y, b.z);
+    const star = new THREE.Mesh(
+        new THREE.SphereGeometry(b.size, 16, 16),
+        material
+    );
 
-// 🔥 SIMPAN POSISI GALAKSI ASLI
-star.userData.galaxyX = b.x - GALAXY_OFFSET_X;
-star.userData.galaxyY = b.y;
-star.userData.galaxyZ = b.z;
+    star.position.set(b.x - GALAXY_OFFSET_X, b.y, b.z);
 
-skyGroup.add(star);
-starMap[b.name] = star;
+    // simpan posisi asli
+    star.userData.galaxyX = b.x - GALAXY_OFFSET_X;
+    star.userData.galaxyY = b.y;
+    star.userData.galaxyZ = b.z;
 
+    star.userData.info = {
+        title: "⭐ " + b.name,
+        desc: "Bintang luar Tata Surya",
+        size: "Ukuran visual",
+        type: "Star"
+    };
 
-starMap[b.name] = star; // 🔥 SIMPAN
-
-star.userData.info = {
-title: "⭐ " + b.name,
-desc: "Bintang luar Tata Surya",
-size: "Ukuran visual",
-type: "Star"
-};
-});  
+    skyGroup.add(star);
+    starMap[b.name] = star;
+});
 
 const deepPlanets = [
 
@@ -1159,14 +1167,15 @@ host: p.host
 
   
 // ======================
-// SCIENTIFIC PULSARS
+// SCIENTIFIC PULSARS WITH PULSE EFFECT
 // ======================
 const pulsars = [
   {
     name: 'Crab Pulsar (PSR B0531+21)',
     x: 2000, y: 150, z: -3000,
     size: 10,
-    color: 0x88ccff,
+    texture: "white.png",
+    pulseSpeed: 0.08, // kecepatan kedip
     info: {
       title: "⚡ Crab Pulsar",
       desc: "Sisa supernova tahun 1054",
@@ -1178,7 +1187,8 @@ const pulsars = [
     name: 'PSR J0437−4715',
     x: -1800, y: 100, z: -2500,
     size: 8,
-    color: 0x99ccff,
+    texture: "white.png",
+    pulseSpeed: 0.12,
     info: {
       title: "⚡ PSR J0437−4715",
       desc: "Pulsar terdekat dari Bumi",
@@ -1190,7 +1200,8 @@ const pulsars = [
     name: 'PSR B1937+21',
     x: 1000, y: 200, z: -2000,
     size: 9,
-    color: 0x55aaff,
+    texture: "white.png",
+    pulseSpeed: 0.15,
     info: {
       title: "⚡ PSR B1937+21",
       desc: "Pulsar tercepat yang diketahui",
@@ -1204,15 +1215,21 @@ pulsars.forEach(p => {
   const star = new THREE.Mesh(
     new THREE.SphereGeometry(p.size, 16, 16),
     new THREE.MeshBasicMaterial({
-      color: p.color,
-      transparent: true
+      map: textureLoader.load("textures/" + p.texture),
+      transparent: true,
+      opacity: 1
     })
   );
-placeDeepObject(star, 4800);
-  star.userData.pulse = Math.random() * 0.05 + 0.95;
+
+  placeDeepObject(star, 4800);
+
+  star.userData.pulseSpeed = p.pulseSpeed; // simpan kecepatan pulse
+  star.userData.pulseOffset = Math.random() * Math.PI * 2; // offset acak
   star.userData.info = p.info;
+
   skyGroup.add(star);
 });
+
 
 
   // ======================
@@ -1275,24 +1292,28 @@ skyGroup.add(nebula);
     }  
   );
   const extraStars = [
-  { name:'Alpha Centauri A', x:700, y:150, z:-1800, size:22, color:0xffeecc },
-  { name:'Alpha Centauri B', x:730, y:140, z:-1820, size:18, color:0xffccaa },
-  { name:'Barnard Star', x:-900, y:200, z:-2000, size:12, color:0xffaa77 },
-  { name:'Wolf 359', x:-1200, y:100, z:-2200, size:10, color:0xff8888 }
+  { name:'Alpha Centauri A', x:700, y:150, z:-1800, size:22, texture:"sun.jpg" },
+  { name:'Alpha Centauri B', x:730, y:140, z:-1820, size:18, texture:"sun.jpg" },
+  { name:'Barnard Star', x:-900, y:200, z:-2000, size:12, texture:"sun.jpg" },
+  { name:'Wolf 359', x:-1200, y:100, z:-2200, size:10, texture:"red.png" }
 ];
 
+// Pastikan ada loader
 extraStars.forEach(b => {
   const star = new THREE.Mesh(
     new THREE.SphereGeometry(b.size, 16, 16),
-    new THREE.MeshBasicMaterial({ color:b.color })
+    new THREE.MeshBasicMaterial({ map: textureLoader.load(b.texture) })
   );
-placeDeepObject(star, 4500);
+
+  placeDeepObject(star, 4500);
+
   star.userData.info = {
-    title:"⭐ "+b.name,
+    title:"⭐ " + b.name,
     desc:"Bintang di luar Tata Surya",
-    size:"Radius visual: "+b.size,
+    size:"Radius visual: " + b.size,
     type:"Star"
   };
+
   skyGroup.add(star);
 });
 
@@ -1452,11 +1473,11 @@ sagDisk.rotation.z += 0.004 * timeScale;
 sagLens.rotation.z -= 0.002 * timeScale;
 
 
-  // update pulsars (kedip)
-  skyGroup.children.forEach(obj => {
-    if(obj.userData && obj.userData.pulse){
-      obj.material.opacity = 0.7 + 0.3 * Math.sin(Date.now()*0.005 + obj.userData.angle || 0);
-    }
+  // Update pulsar opacity
+  pulsars.forEach((p, i) => {
+    const star = skyGroup.children[i]; // asumsi urutan sama
+    const time = performance.now() * 0.001; // detik
+    star.material.opacity = 0.5 + 0.5 * Math.sin(time * star.userData.pulseSpeed * 10 + star.userData.pulseOffset);
   });
 
   // controls
