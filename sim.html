@@ -664,7 +664,7 @@ sun.add(sunGlow);
   const PLANETS = [
   {name:'Mercury', size:3,  a:60,  e:0.205, speed:4.15, tex:'merkurius.jpg'},
   {name:'Venus',   size:6,  a:90,  e:0.007, speed:1.62, tex:'venusmap.jpg'},
-  {name:'Earth',   size:6.5,a:130, e:0.017, speed:1.00, tex:'https://threejs.org/examples/planets/earth_atmos_2048.jpg'},
+  {name:'Earth',   size:6.5,a:130, e:0.017, speed:1.00, tex:'earth.jpg'},
   {name:'Mars',    size:4.5,a:170, e:0.093, speed:0.53, tex:'mars.jpg'},
   {name:'Jupiter', size:14, a:230, e:0.049, speed:0.084, tex:'jupitermap.jpg'},
   {name:'Saturn',  size:12, a:300, e:0.056, speed:0.034, tex:'saturnmap.jpg'},
@@ -711,7 +711,7 @@ sun.add(sunGlow);
   });
 
   // MOON
-  const moonTex = loader.load('https://threejs.org/examples/planets/moon_1024.jpg');
+  const moonTex = loader.load('moon.jpg');
   moonTex.colorSpace = THREE.SRGBColorSpace;
   const moon = new THREE.Mesh(new THREE.SphereGeometry(1.8,32,32), new THREE.MeshBasicMaterial({ map:moonTex }));
   earthMesh.add(moon);
