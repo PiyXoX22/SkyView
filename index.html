@@ -243,6 +243,8 @@ button:disabled { opacity:0.5; cursor:none; }
   <button id="cinematicBtn">Cinematic Mode</button>
   <button id="eduBtn">Educational Mode</button>
   <button id="quizBtn">Quiz Mode</button>
+  <button id="issBtn">ISS Tracker</button>
+  <button id="newsBtn">Space News</button>
   <button id="aboutBtn">About SpaDu</button>
   <button id="startBtn">START Simulation</button>
 </div>
@@ -372,6 +374,32 @@ button:disabled { opacity:0.5; cursor:none; }
 
   <button id="backAboutBtn">Kembali ke Menu</button>
 </div>
+<div id="issContent">
+
+  <h1>ISS Satellite Tracker</h1>
+  
+  <p>Posisi International Space Station secara real-time</p>
+  
+  <div id="issBox">
+  
+  <p id="issData">Loading ISS data...</p>
+  
+  <button id="refreshISS">Refresh Position</button>
+  
+  </div>
+  
+  <button id="backISSBtn">Kembali ke Menu</button>
+  
+  </div>
+  <div id="newsContent">
+
+    <h1>Space News</h1>
+    
+    <div id="newsBox"></div>
+    
+    <button id="backNewsBtn">Kembali ke Menu</button>
+    
+    </div>
 <style>
   .aboutSection {
   margin-bottom: 22px;
@@ -429,6 +457,27 @@ button:disabled { opacity:0.5; cursor:none; }
 #donateBtn {
   margin-top: 18px;
   border-color: #0ff;
+}
+#issContent{
+position:relative;
+z-index:10;
+padding:50px;
+max-width:900px;
+margin:auto;
+text-align:center;
+display:none;
+}
+
+#issContent.show{
+display:block;
+}
+
+#issBox{
+margin-top:30px;
+padding:25px;
+border:1px solid cyan;
+border-radius:10px;
+background:rgba(0,255,255,0.05);
 }
 
 </style>
@@ -874,7 +923,136 @@ backAboutBtn.onclick = () => {
   intro.classList.add("show");
 };
 
+const issBtn = document.getElementById("issBtn");
+const issContent = document.getElementById("issContent");
+const backISSBtn = document.getElementById("backISSBtn");
 
+issBtn.addEventListener("click",()=>{
+intro.classList.remove("show");
+issContent.classList.add("show");
+loadISS();
+});
+
+backISSBtn.onclick=()=>{
+issContent.classList.remove("show");
+intro.classList.add("show");
+};
+
+async function loadISS(){
+
+try{
+
+const res = await fetch("https://api.wheretheiss.at/v1/satellites/25544");
+const data = await res.json();
+
+document.getElementById("issData").innerHTML=`
+🛰 Latitude: ${data.latitude.toFixed(2)} <br>
+🛰 Longitude: ${data.longitude.toFixed(2)} <br>
+🛰 Altitude: ${data.altitude.toFixed(2)} km <br>
+🛰 Velocity: ${data.velocity.toFixed(0)} km/h
+`;
+
+}catch(e){
+
+document.getElementById("issData").textContent="ISS data unavailable";
+
+}
+
+}
+
+document.getElementById("refreshISS").onclick=loadISS;
+const newsBtn=document.getElementById("newsBtn");
+const newsContent=document.getElementById("newsContent");
+const backNewsBtn=document.getElementById("backNewsBtn");
+
+newsBtn.addEventListener("click",()=>{
+intro.classList.remove("show");
+newsContent.classList.add("show");
+loadSpaceNews();
+});
+
+backNewsBtn.onclick=()=>{
+newsContent.classList.remove("show");
+intro.classList.add("show");
+};
+
+async function loadSpaceNews(){
+
+const res=await fetch("https://api.spaceflightnewsapi.net/v4/articles/?limit=5");
+const data=await res.json();
+
+const container=document.getElementById("newsBox");
+
+container.innerHTML="";
+
+data.results.forEach(article=>{
+
+const div=document.createElement("div");
+
+div.innerHTML=`
+<h3>${article.title}</h3>
+<p>${article.summary}</p>
+<a href="${article.url}" target="_blank">Read more</a>
+<hr>
+`;
+
+container.appendChild(div);
+
+});
+
+}
+const aiBtn=document.getElementById("aiBtn");
+const aiContent=document.getElementById("aiContent");
+const backAIBtn=document.getElementById("backAIBtn");
+
+aiBtn.addEventListener("click",()=>{
+intro.classList.remove("show");
+aiContent.classList.add("show");
+});
+
+backAIBtn.onclick=()=>{
+aiContent.classList.remove("show");
+intro.classList.add("show");
+};
+
+const responses={
+"black hole":"Black holes are regions where gravity is extremely strong.",
+"mars":"Mars is known as the red planet.",
+"jupiter":"Jupiter is the largest planet in the Solar System.",
+"milky way":"The Milky Way is our home galaxy."
+};
+
+function aiAnswer(q){
+
+q=q.toLowerCase();
+
+for(let key in responses){
+if(q.includes(key)) return responses[key];
+}
+
+return "Interesting question! Astronomers are still studying that.";
+}
+
+document.getElementById("sendChat").onclick=()=>{
+
+const input=document.getElementById("chatInput");
+const box=document.getElementById("chatBox");
+
+const text=input.value;
+
+if(!text) return;
+
+box.innerHTML+=`<p><b>You:</b> ${text}</p>`;
+
+const reply=aiAnswer(text);
+
+box.innerHTML+=`<p><b>AI:</b> ${reply}</p>`;
+
+box.scrollTop=box.scrollHeight;
+
+input.value="";
+
+};
 </script>
 <style>
   #quizOptions button.correct {
@@ -891,7 +1069,24 @@ backAboutBtn.onclick = () => {
   cursor: not-allowed;
   opacity: 0.9;
 }
+#newsContent{
+position:relative;
+z-index:10;
+padding:50px;
+max-width:900px;
+margin:auto;
+text-align:center;
+display:none;
+}
 
+#newsContent.show{
+display:block;
+}
+
+#newsBox{
+margin-top:30px;
+text-align:left;
+}
 </style>
 
 </body>
