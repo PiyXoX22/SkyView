@@ -1422,16 +1422,23 @@ function placeDeepObject(obj, radius){
   document.getElementById('timeScale').oninput = e => timeScale = parseFloat(e.target.value);
   document.getElementById('telescopeBtn').onclick = ()=> { camera.fov = camera.fov===60 ? 12 : 60; camera.updateProjectionMatrix(); };
   document.getElementById("freeBtn").onclick = ()=>{
-// 📱 JIKA MOBILE → TOLAK & TAMPILKAN PESAN
-if(isMobile){
-  showMobileNotice();
-  return;
-}
 
-// 🖥️ JIKA PC → NORMAL FREE FLY
 freeMode = !freeMode;
+
 controls.enabled = !freeMode;
 flyControls.enabled = freeMode;
+
+// tampilkan kontrol mobile
+if(isMobile){
+  const mobileControls = document.getElementById("mobileControls");
+
+  if(freeMode){
+    mobileControls.style.display = "block";
+  }else{
+    mobileControls.style.display = "none";
+  }
+}
+
 };
 
   let warpActive = false;
