@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>ISS Tracker</title>
+
+<style>
+body{
+background:black;
+color:#0ff;
+font-family:monospace;
+text-align:center;
+padding:40px;
+}
+
+#box{
+margin-top:30px;
+padding:25px;
+border:1px solid cyan;
+border-radius:10px;
+background:rgba(0,255,255,0.05);
+}
+
+button{
+margin-top:20px;
+padding:10px 20px;
+border:1px solid cyan;
+background:transparent;
+color:cyan;
+cursor:pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>ISS Tracker</h1>
+
+<div id="box">
+<p id="data">Loading ISS...</p>
+<button onclick="loadISS()">Refresh</button>
+</div>
+
+<br>
+
+<button onclick="location.href='astronom.html'">Kembali</button>
+
+<script>
+
+async function loadISS(){
+
+try{
+
+const res = await fetch("https://api.wheretheiss.at/v1/satellites/25544");
+const data = await res.json();
+
+document.getElementById("data").innerHTML = `
+Latitude : ${data.latitude.toFixed(2)} <br>
+Longitude : ${data.longitude.toFixed(2)} <br>
+Altitude : ${data.altitude.toFixed(2)} km <br>
+Velocity : ${data.velocity.toFixed(0)} km/h
+`;
+
+}catch{
+
+document.getElementById("data").textContent="ISS data unavailable";
+
+}
+
+}
+
+loadISS();
+
+</script>
+
+</body>
+</html>

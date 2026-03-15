@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Asteroid Tracker</title>
+
+<style>
+
+body{
+background:black;
+color:#0ff;
+font-family:monospace;
+text-align:center;
+padding:40px;
+}
+
+#box{
+margin-top:20px;
+border:1px solid cyan;
+padding:20px;
+border-radius:10px;
+background:rgba(0,255,255,0.05);
+}
+
+button{
+margin-top:30px;
+padding:10px 20px;
+border:1px solid cyan;
+background:transparent;
+color:cyan;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Near Earth Asteroids</h1>
+
+<div id="box">Loading asteroid data...</div>
+
+<button onclick="location.href='astronom.html'">
+Kembali
+</button>
+
+<script>
+
+async function loadAsteroids(){
+
+const res = await fetch(
+"https://api.nasa.gov/neo/rest/v1/feed?api_key=DEMO_KEY"
+);
+
+const data = await res.json();
+
+const today = Object.keys(data.near_earth_objects)[0];
+
+const list = data.near_earth_objects[today];
+
+const box=document.getElementById("box");
+
+box.innerHTML="";
+
+list.slice(0,5).forEach(a=>{
+
+box.innerHTML += `
+<p>
+☄ ${a.name}<br>
+Size : ${Math.round(a.estimated_diameter.meters.estimated_diameter_max)} m<br>
+Dangerous : ${a.is_potentially_hazardous_asteroid}
+</p>
+<hr>
+`;
+
+});
+
+}
+
+loadAsteroids();
+
+</script>
+
+</body>
+</html>

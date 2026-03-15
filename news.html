@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Space News</title>
+
+<style>
+
+body{
+background:black;
+color:#0ff;
+font-family:monospace;
+padding:40px;
+text-align:center;
+}
+
+#newsBox{
+margin-top:30px;
+text-align:left;
+max-width:900px;
+margin:auto;
+}
+
+button{
+margin-top:30px;
+padding:10px 20px;
+border:1px solid cyan;
+background:transparent;
+color:cyan;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Space News</h1>
+
+<div id="newsBox">Loading news...</div>
+
+<button onclick="location.href='astronom.html'">
+Kembali
+</button>
+
+<script>
+
+async function loadNews(){
+
+const res = await fetch("https://api.spaceflightnewsapi.net/v4/articles/?limit=5");
+const data = await res.json();
+
+const box = document.getElementById("newsBox");
+
+box.innerHTML="";
+
+data.results.forEach(a=>{
+
+box.innerHTML += `
+<h3>${a.title}</h3>
+<p>${a.summary}</p>
+<a href="${a.url}" target="_blank">Read more</a>
+<hr>
+`;
+
+});
+
+}
+
+loadNews();
+
+</script>
+
+</body>
+</html>

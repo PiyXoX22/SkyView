@@ -240,7 +240,7 @@ button:disabled { opacity:0.5; cursor:none; }
   <h1 class="flickerNeon">SpaDu | Space Education</h1>
   <p>Website Interaktif Edukasi Astronomi Indonesia</p>
   <button id="playAmbienceBtn">Play Ambience</button>
-  <button id="cinematicBtn">Cinematic Mode</button>
+  <button id="cinematicBtn">Astronom Mode</button>
   <button id="eduBtn">Educational Mode</button>
   <button id="quizBtn">Quiz Mode</button>
   <button id="aboutBtn">About SpaDu</button>
@@ -263,8 +263,9 @@ button:disabled { opacity:0.5; cursor:none; }
 
 <!-- CINEMATIC MODE -->
 <div id="cinematicContent">
-  <h1>Cinematic Mode</h1>
-  <p>Masuki pengalaman visual SpaDu yang dramatis dan immersive.</p>
+  <h1>Astronom Mode</h1>
+  <p>Masuki pengalaman menjadi peneliti dan astronom bersama SpaDu.</p>
+  <div class="cinematicGrid">
   <button id="issBtn">ISS Tracker</button>
   <button id="newsBtn">Space News</button>
   <button id="apodBtn">NASA APOD</button>
@@ -279,6 +280,7 @@ button:disabled { opacity:0.5; cursor:none; }
     <source src="videoKamu.mp4" type="video/mp4">
     Browser kamu tidak mendukung video.
   </video>
+  </div>
 </div>
 
 <!-- QUIZ MODE -->
@@ -1490,7 +1492,20 @@ padding:20px;
 border-radius:10px;
 background:rgba(0,255,255,0.05);
 }
+.cinematicGrid{
+display:grid;
+grid-template-columns:repeat(3, 240px);
+gap:18px;
+justify-content:center;
+margin-top:30px;
+}
+@media (max-width:768px){
 
+.cinematicGrid{
+grid-template-columns:1fr;
+}
+
+}
 </style>
 
 </body>

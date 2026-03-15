@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>NASA Gallery</title>
+
+<style>
+
+body{
+background:black;
+color:#0ff;
+font-family:monospace;
+text-align:center;
+padding:40px;
+}
+
+#grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+margin-top:30px;
+}
+
+.card{
+border:1px solid cyan;
+padding:10px;
+border-radius:10px;
+background:rgba(0,255,255,0.05);
+}
+
+.card img{
+width:100%;
+border-radius:6px;
+}
+
+button{
+margin-top:20px;
+padding:10px 20px;
+border:1px solid cyan;
+background:transparent;
+color:cyan;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>NASA APOD Gallery</h1>
+
+<div id="grid"></div>
+
+<button onclick="loadGallery()">Load More</button>
+
+<br><br>
+
+<button onclick="location.href='astronom.html'">
+Kembali
+</button>
+
+<script>
+
+async function loadGallery(){
+
+const res = await fetch(
+"https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&count=12"
+);
+
+const data = await res.json();
+
+const grid=document.getElementById("grid");
+
+data.forEach(img=>{
+
+if(img.media_type!=="image") return;
+
+const card=document.createElement("div");
+card.className="card";
+
+card.innerHTML=`
+<img src="${img.url}">
+<h3>${img.title}</h3>
+<p>${img.date}</p>
+`;
+
+grid.appendChild(card);
+
+});
+
+}
+
+loadGallery();
+
+</script>
+
+</body>
+</html>

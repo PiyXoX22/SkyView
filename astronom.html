@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Astronom Mode</title>
+
+<style>
+
+body{
+background:black;
+color:#0ff;
+font-family:monospace;
+text-align:center;
+padding:40px;
+}
+
+h1{
+text-shadow:0 0 10px cyan,0 0 20px cyan;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(3,240px);
+gap:20px;
+justify-content:center;
+margin-top:30px;
+}
+
+button{
+width:240px;
+height:40px;
+border:1px solid cyan;
+background:transparent;
+color:cyan;
+font-family:monospace;
+cursor:pointer;
+border-radius:10px;
+}
+
+button:hover{
+background:cyan;
+color:black;
+box-shadow:0 0 20px cyan;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Astronom Mode</h1>
+
+<p>Masuki pengalaman menjadi peneliti dan astronom bersama SpaDu.</p>
+
+<div class="grid">
+
+<button onclick="location.href='iss.html'">
+ISS Tracker
+</button>
+
+<button onclick="location.href='news.html'">
+Space News
+</button>
+
+<button onclick="location.href='apod.html'">
+NASA APOD
+</button>
+
+<button onclick="location.href='gallery.html'">
+NASA Gallery
+</button>
+
+<button onclick="location.href='earth.html'">
+Live Earth
+</button>
+
+<button onclick="location.href='asteroid.html'">
+Asteroid Tracker
+</button>
+
+<button onclick="location.href='milkyway.html'">
+Milky Way Map
+</button>
+
+</div>
+
+<br><br>
+
+<button onclick="location.href='index.html'">
+Kembali ke Menu
+</button>
+
+</body>
+</html>

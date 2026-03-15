@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Live Earth</title>
+
+<style>
+
+body{
+background:black;
+color:#0ff;
+font-family:monospace;
+text-align:center;
+padding:40px;
+}
+
+img{
+width:100%;
+max-width:900px;
+border-radius:10px;
+}
+
+button{
+margin-top:30px;
+padding:10px 20px;
+border:1px solid cyan;
+background:transparent;
+color:cyan;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Live Earth From Space</h1>
+
+<img id="earth"
+src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/5424x5424.jpg">
+
+<br>
+
+<button onclick="location.href='astronom.html'">
+Kembali
+</button>
+
+<script>
+
+setInterval(()=>{
+
+document.getElementById("earth").src =
+"https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/5424x5424.jpg?"+Date.now();
+
+},300000);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Quiz Mode | SpaDu</title>
+
+<style>
+
+body{
+background:black;
+color:#0ff;
+font-family:monospace;
+text-align:center;
+padding:40px;
+}
+
+#box{
+margin-top:30px;
+padding:30px;
+border:1px solid cyan;
+border-radius:12px;
+background:rgba(0,255,255,0.05);
+}
+
+button{
+margin-top:10px;
+padding:10px 20px;
+border:1px solid cyan;
+background:transparent;
+color:cyan;
+cursor:pointer;
+}
+
+.correct{
+background:#1aff6c;
+color:black;
+}
+
+.wrong{
+background:#ff4d4d;
+color:black;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Quiz Astronomi</h1>
+
+<div id="box">
+
+<h2 id="question"></h2>
+
+<div id="options"></div>
+
+<p id="result"></p>
+
+<button id="next">Next</button>
+
+</div>
+
+<br>
+
+<button onclick="location.href='index.html'">
+Kembali ke Menu
+</button>
+
+<script>
+
+const quiz=[
+
+{q:"Planet terbesar?",o:["Mars","Jupiter","Venus","Earth"],a:1},
+{q:"Planet merah?",o:["Mars","Venus","Mercury","Earth"],a:0},
+{q:"Planet cincin?",o:["Saturn","Earth","Mars","Neptune"],a:0},
+{q:"Galaksi kita?",o:["Milky Way","Andromeda","Triangulum","Sombrero"],a:0}
+
+];
+
+let i=0;
+let score=0;
+
+function load(){
+
+const q=quiz[i];
+
+document.getElementById("question").textContent=q.q;
+
+const opt=document.getElementById("options");
+
+opt.innerHTML="";
+
+q.o.forEach((t,index)=>{
+
+const b=document.createElement("button");
+
+b.textContent=t;
+
+b.onclick=()=>check(index);
+
+opt.appendChild(b);
+
+});
+
+}
+
+function check(sel){
+
+const correct=quiz[i].a;
+
+if(sel===correct){
+
+score++;
+
+document.getElementById("result").textContent="Benar";
+
+}else{
+
+document.getElementById("result").textContent="Salah";
+
+}
+
+}
+
+document.getElementById("next").onclick=()=>{
+
+i++;
+
+if(i>=quiz.length){
+
+document.getElementById("question").textContent="Score: "+score+"/"+quiz.length;
+
+document.getElementById("options").innerHTML="";
+
+return;
+
+}
+
+load();
+
+};
+
+load();
+
+</script>
+
+</body>
+</html>

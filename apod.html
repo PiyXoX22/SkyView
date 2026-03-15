@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>NASA APOD</title>
+
+<style>
+
+body{
+background:black;
+color:#0ff;
+font-family:monospace;
+text-align:center;
+padding:40px;
+}
+
+#box{
+margin-top:30px;
+padding:25px;
+border:1px solid cyan;
+border-radius:10px;
+background:rgba(0,255,255,0.05);
+}
+
+img{
+width:100%;
+border-radius:8px;
+margin-top:10px;
+}
+
+button{
+margin-top:30px;
+padding:10px 20px;
+border:1px solid cyan;
+background:transparent;
+color:cyan;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>NASA Astronomy Picture of the Day</h1>
+
+<div id="box">Loading...</div>
+
+<button onclick="location.href='astronom.html'">
+Kembali
+</button>
+
+<script>
+
+async function loadAPOD(){
+
+const res = await fetch("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY");
+const data = await res.json();
+
+document.getElementById("box").innerHTML = `
+<h2>${data.title}</h2>
+<p>${data.date}</p>
+<img src="${data.url}">
+<p>${data.explanation.substring(0,400)}...</p>
+`;
+
+}
+
+loadAPOD();
+
+</script>
+
+</body>
+</html>
