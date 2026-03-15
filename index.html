@@ -243,8 +243,6 @@ button:disabled { opacity:0.5; cursor:none; }
   <button id="cinematicBtn">Cinematic Mode</button>
   <button id="eduBtn">Educational Mode</button>
   <button id="quizBtn">Quiz Mode</button>
-  <button id="issBtn">ISS Tracker</button>
-  <button id="newsBtn">Space News</button>
   <button id="aboutBtn">About SpaDu</button>
   <button id="startBtn">START Simulation</button>
 </div>
@@ -267,6 +265,14 @@ button:disabled { opacity:0.5; cursor:none; }
 <div id="cinematicContent">
   <h1>Cinematic Mode</h1>
   <p>Masuki pengalaman visual SpaDu yang dramatis dan immersive.</p>
+  <button id="issBtn">ISS Tracker</button>
+  <button id="newsBtn">Space News</button>
+  <button id="apodBtn">NASA APOD</button>
+  <button id="apodGalleryBtn">NASA Gallery</button>
+  <button id="earthBtn">Live Earth</button>
+<button id="asteroidBtn">Asteroid Tracker</button>
+<button id="issMapBtn">ISS Live Map</button>
+<button id="milkyBtn">Milky Way Map</button>
   <button id="startCineBtn">Mulai Cinematic</button>
   <button id="backCineBtn">Kembali ke Menu</button>
   <video id="cineVideo" controls>
@@ -400,6 +406,94 @@ button:disabled { opacity:0.5; cursor:none; }
     <button id="backNewsBtn">Kembali ke Menu</button>
     
     </div>
+    <div id="apodContent">
+
+      <h1>NASA Astronomy Picture of the Day</h1>
+      
+      <div id="apodBox">
+      <p>Loading NASA image...</p>
+      </div>
+      
+      <button id="backApodBtn">Kembali</button>
+      
+      </div>
+      
+      <div id="galleryContent">
+
+        <h1>NASA APOD Gallery</h1>
+        
+        <div id="galleryBox"></div>
+        
+        <button id="loadMoreGallery">Load More</button>
+        
+        <button id="backGalleryBtn">Kembali</button>
+        
+        </div>
+        <!-- LIVE EARTH -->
+<div id="earthContent">
+
+  <h1>Live Earth From Space</h1>
+  
+  <div id="earthBox">
+    <img id="earthImage"
+    src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/5424x5424.jpg">
+    <script>
+      setInterval(()=>{
+document.getElementById("earthImage").src =
+"https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/5424x5424.jpg?"+Date.now();
+},300000);
+    </script>
+  </div>
+  
+  
+  <button id="backEarthBtn">Kembali</button>
+  
+  </div>
+  
+  
+  <!-- ASTEROID TRACKER -->
+  <div id="asteroidContent">
+  
+  <h1>Near Earth Asteroids</h1>
+  
+  <div id="asteroidBox">Loading asteroid data...</div>
+  
+  <button id="backAsteroidBtn">Kembali</button>
+  
+  </div>
+  
+  
+  <!-- ISS LIVE MAP -->
+  <div id="issMapContent">
+  
+  <h1>ISS Live Map</h1>
+  
+  <iframe
+  width="100%"
+  height="500"
+  src="https://isstracker.spaceflight.esa.int/">
+  </iframe>
+  
+  <button id="backISSMapBtn">Kembali</button>
+  
+  </div>
+
+  
+  
+  <!-- MILKY WAY MAP -->
+  <div id="milkyWayContent">
+  
+  <h1>Milky Way Map</h1>
+  
+  <iframe
+  width="100%"
+  height="600"
+  src="https://stellarium-web.org/">
+  </iframe>
+  
+  <button id="backMilkyBtn">Kembali</button>
+  
+  </div>
 <style>
   .aboutSection {
   margin-bottom: 22px;
@@ -928,14 +1022,14 @@ const issContent = document.getElementById("issContent");
 const backISSBtn = document.getElementById("backISSBtn");
 
 issBtn.addEventListener("click",()=>{
-intro.classList.remove("show");
+cinematicContent.classList.remove("show");
 issContent.classList.add("show");
 loadISS();
 });
 
 backISSBtn.onclick=()=>{
 issContent.classList.remove("show");
-intro.classList.add("show");
+cinematicContent.classList.add("show");
 };
 
 async function loadISS(){
@@ -966,14 +1060,14 @@ const newsContent=document.getElementById("newsContent");
 const backNewsBtn=document.getElementById("backNewsBtn");
 
 newsBtn.addEventListener("click",()=>{
-intro.classList.remove("show");
+cinematicContent.classList.remove("show");
 newsContent.classList.add("show");
 loadSpaceNews();
 });
 
 backNewsBtn.onclick=()=>{
 newsContent.classList.remove("show");
-intro.classList.add("show");
+cinematicContent.classList.add("show");
 };
 
 async function loadSpaceNews(){
@@ -1001,57 +1095,232 @@ container.appendChild(div);
 });
 
 }
-const aiBtn=document.getElementById("aiBtn");
-const aiContent=document.getElementById("aiContent");
-const backAIBtn=document.getElementById("backAIBtn");
 
-aiBtn.addEventListener("click",()=>{
-intro.classList.remove("show");
-aiContent.classList.add("show");
+// ======================
+// NASA APOD (Astronomy Picture of the Day)
+// ======================
+
+const apodBtn = document.querySelector("#apodBtn");
+const apodContent = document.getElementById("apodContent");
+const backApodBtn = document.getElementById("backApodBtn");
+
+apodBtn.addEventListener("click",()=>{
+cinematicContent.classList.remove("show");
+apodContent.classList.add("show");
+loadAPOD();
 });
 
-backAIBtn.onclick=()=>{
-aiContent.classList.remove("show");
-intro.classList.add("show");
+backApodBtn.onclick=()=>{
+apodContent.classList.remove("show");
+cinematicContent.classList.add("show");
 };
 
-const responses={
-"black hole":"Black holes are regions where gravity is extremely strong.",
-"mars":"Mars is known as the red planet.",
-"jupiter":"Jupiter is the largest planet in the Solar System.",
-"milky way":"The Milky Way is our home galaxy."
+async function loadAPOD(){
+
+try{
+
+const res = await fetch(
+"https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+);
+
+const data = await res.json();
+
+document.getElementById("apodBox").innerHTML=`
+
+<h2>${data.title}</h2>
+
+<p>${data.date}</p>
+
+<img src="${data.url}">
+
+<p>${data.explanation.substring(0,400)}...</p>
+
+`;
+
+}catch{
+
+document.getElementById("apodBox").textContent="APOD unavailable";
+
+}
+
+}
+const apodGalleryBtn=document.getElementById("apodGalleryBtn");
+const galleryContent=document.getElementById("galleryContent");
+const backGalleryBtn=document.getElementById("backGalleryBtn");
+
+apodGalleryBtn.addEventListener("click",()=>{
+cinematicContent.classList.remove("show");
+galleryContent.classList.add("show");
+loadGallery();
+});
+
+backGalleryBtn.onclick=()=>{
+galleryContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
+let galleryPage = 0;
+
+async function loadGallery(){
+
+const box = document.getElementById("galleryBox");
+
+if(galleryPage === 0){
+box.innerHTML = "Loading NASA Gallery...";
+}
+
+try{
+
+const res = await fetch(
+`https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&count=20`
+);
+
+const data = await res.json();
+
+if(galleryPage === 0){
+box.innerHTML = "";
+}
+
+data.forEach(item => {
+
+if(item.media_type !== "image") return;
+
+const card = document.createElement("div");
+card.className = "galleryCard";
+
+card.innerHTML = `
+<img src="${item.url}">
+<h3>${item.title}</h3>
+<p>${item.date}</p>
+`;
+
+box.appendChild(card);
+
+});
+
+galleryPage++;
+
+}catch{
+
+box.innerHTML = "Gallery unavailable";
+
+}
+
+} 
+document.getElementById("loadMoreGallery").onclick = () => {
+loadGallery();
+};  
+// ============================
+// LIVE EARTH
+// ============================
+
+const earthBtn=document.getElementById("earthBtn");
+const earthContent=document.getElementById("earthContent");
+const backEarthBtn=document.getElementById("backEarthBtn");
+
+earthBtn.onclick=()=>{
+cinematicContent.classList.remove("show");
+earthContent.classList.add("show");
 };
 
-function aiAnswer(q){
+backEarthBtn.onclick=()=>{
+earthContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
 
-q=q.toLowerCase();
 
-for(let key in responses){
-if(q.includes(key)) return responses[key];
+// ============================
+// ASTEROID TRACKER
+// ============================
+
+const asteroidBtn=document.getElementById("asteroidBtn");
+const asteroidContent=document.getElementById("asteroidContent");
+const backAsteroidBtn=document.getElementById("backAsteroidBtn");
+
+asteroidBtn.onclick=()=>{
+cinematicContent.classList.remove("show");
+asteroidContent.classList.add("show");
+loadAsteroids();
+};
+
+backAsteroidBtn.onclick=()=>{
+asteroidContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
+
+async function loadAsteroids(){
+
+try{
+
+const res=await fetch(
+"https://api.nasa.gov/neo/rest/v1/feed?api_key=DEMO_KEY"
+);
+
+const data=await res.json();
+
+const box=document.getElementById("asteroidBox");
+
+box.innerHTML="";
+
+const today=Object.keys(data.near_earth_objects)[0];
+
+data.near_earth_objects[today].slice(0,5).forEach(ast=>{
+
+box.innerHTML+=`
+<p>
+☄ ${ast.name}<br>
+Size: ${Math.round(ast.estimated_diameter.meters.estimated_diameter_max)} m<br>
+Dangerous: ${ast.is_potentially_hazardous_asteroid}
+</p>
+<hr>
+`;
+
+});
+
+}catch{
+
+document.getElementById("asteroidBox").textContent="Asteroid data unavailable";
+
 }
 
-return "Interesting question! Astronomers are still studying that.";
 }
 
-document.getElementById("sendChat").onclick=()=>{
 
-const input=document.getElementById("chatInput");
-const box=document.getElementById("chatBox");
+// ============================
+// ISS LIVE MAP
+// ============================
 
-const text=input.value;
+const issMapBtn=document.getElementById("issMapBtn");
+const issMapContent=document.getElementById("issMapContent");
+const backISSMapBtn=document.getElementById("backISSMapBtn");
 
-if(!text) return;
+issMapBtn.onclick=()=>{
+cinematicContent.classList.remove("show");
+issMapContent.classList.add("show");
+};
 
-box.innerHTML+=`<p><b>You:</b> ${text}</p>`;
+backISSMapBtn.onclick=()=>{
+issMapContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
 
-const reply=aiAnswer(text);
 
-box.innerHTML+=`<p><b>AI:</b> ${reply}</p>`;
 
-box.scrollTop=box.scrollHeight;
+// ============================
+// MILKY WAY MAP
+// ============================
 
-input.value="";
+const milkyBtn=document.getElementById("milkyBtn");
+const milkyWayContent=document.getElementById("milkyWayContent");
+const backMilkyBtn=document.getElementById("backMilkyBtn");
 
+milkyBtn.onclick=()=>{
+cinematicContent.classList.remove("show");
+milkyWayContent.classList.add("show");
+};
+
+backMilkyBtn.onclick=()=>{
+milkyWayContent.classList.remove("show");
+cinematicContent.classList.add("show");
 };
 </script>
 <style>
@@ -1087,6 +1356,141 @@ display:block;
 margin-top:30px;
 text-align:left;
 }
+#apodContent{
+position:relative;
+z-index:10;
+padding:50px;
+max-width:900px;
+margin:auto;
+text-align:center;
+display:none;
+}
+
+#apodContent.show{
+display:block;
+}
+
+#apodBox{
+margin-top:30px;
+padding:25px;
+border:1px solid cyan;
+border-radius:10px;
+background:rgba(0,255,255,0.05);
+}
+
+#apodBox img{
+width:100%;
+border-radius:8px;
+margin-top:10px;
+}
+#galleryContent{
+position:relative;
+z-index:10;
+padding:50px;
+max-width:1100px;
+margin:auto;
+text-align:center;
+display:none;
+}
+
+#galleryContent.show{
+display:block;
+}
+
+#galleryBox{
+margin-top:30px;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+.galleryCard{
+border:1px solid cyan;
+border-radius:10px;
+padding:10px;
+background:rgba(0,255,255,0.05);
+}
+
+.galleryCard img{
+width:100%;
+border-radius:6px;
+}
+
+.galleryCard p{
+font-size:12px;
+margin-top:5px;
+}
+#apodContent{
+display:none;
+position:relative;
+z-index:10;
+padding:50px;
+max-width:900px;
+margin:auto;
+text-align:center;
+}
+
+#apodContent.show{
+display:block;
+}
+
+#galleryContent{
+display:none;
+position:relative;
+z-index:10;
+padding:50px;
+max-width:1100px;
+margin:auto;
+text-align:center;
+}
+
+#galleryContent.show{
+display:block;
+}
+.galleryCard{
+border:1px solid cyan;
+border-radius:10px;
+padding:10px;
+background:rgba(0,255,255,0.05);
+}
+
+.galleryCard img{
+width:100%;
+border-radius:6px;
+}
+#earthContent,
+#asteroidContent,
+#issMapContent,
+#milkyWayContent{
+position:relative;
+z-index:10;
+padding:50px;
+max-width:1000px;
+margin:auto;
+text-align:center;
+display:none;
+}
+
+#earthContent.show,
+#asteroidContent.show,
+#issMapContent.show,
+#milkyWayContent.show{
+display:block;
+}
+
+#earthBox img{
+width:100%;
+border-radius:10px;
+}
+
+#asteroidBox{
+margin-top:20px;
+border:1px solid cyan;
+padding:20px;
+border-radius:10px;
+background:rgba(0,255,255,0.05);
+}
+
 </style>
 
 </body>
