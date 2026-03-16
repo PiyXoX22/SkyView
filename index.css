@@ -1,0 +1,398 @@
+/* ===== BODY & BACKGROUND ===== */
+body { 
+    margin:0; 
+    font-family:monospace; 
+    color:white; 
+    background:black; 
+    overflow-x:hidden; /* horizontal scroll hilang */
+    cursor: none;
+  }
+  
+  /* Background & starfield */
+  #bgImage { 
+    position:fixed; top:0; left:0; width:110%; height:110%; 
+    object-fit:cover; z-index:0; 
+    transition: transform 0.1s ease, filter 0.5s ease; 
+    pointer-events:none; filter: brightness(0.8); 
+  }
+  canvas#starfield { 
+    position:fixed; top:0; left:0; z-index:1; pointer-events:none; 
+  }
+  
+  /* ===== LOADING / INTRO / FADE ===== */
+  #loadingScreen, #introScreen, #fadeOverlay { 
+    position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; 
+    transition:opacity 1.2s ease; 
+  }
+  #loadingScreen { background:black; z-index:9999; pointer-events:auto; }
+  #loadingScreen.hide { opacity:0; pointer-events:none; }
+  #introScreen { opacity:0; z-index:9998; pointer-events:none; gap:10px; }
+  #introScreen.show { opacity:1; pointer-events:auto; }
+  #fadeOverlay { background:black; z-index:10000; opacity:0; pointer-events:none; transition:opacity 1s ease; }
+  #fadeOverlay.show { opacity:1; pointer-events:auto; }
+  
+  /* ===== TEKS NEON ===== */
+  h1,h2,p { 
+    color:#0ff; 
+    text-shadow:0 0 3px #0ff,0 0 6px #0ff,0 0 10px #0ff; 
+    text-align:center; 
+    margin:0;
+  }
+  .flickerNeon {
+    animation: flicker 1.5s infinite;
+    text-shadow:0 0 5px #0ff,0 0 10px #0ff,0 0 20px #0ff,0 0 40px #0ff;
+  }
+  @keyframes flicker {
+    0%,19%,21%,23%,25%,54%,56%,100% { opacity:1; }
+    20%,22%,24%,55% { opacity:0.4; }
+  }
+  
+  /* ===== BUTTON ===== */
+  button {
+    width: 240px;              /* ⬅ SEMUA TOMBOL SAMA LEBAR */
+    height: 34px;              /* ⬅ SEMUA TOMBOL SAMA TINGGI */
+  
+    margin-top: 18px;
+    border: 1px solid cyan;
+    background: transparent;
+  
+    color: cyan;
+    font-family: monospace;
+    font-size: 18px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    cursor: none;
+    transition: all 0.3s ease;
+  
+    border-radius: 10px;
+    text-shadow: 
+      0 0 6px #0ff,
+      0 0 12px #0ff,
+      0 0 20px #0ff;
+  
+    box-shadow: 
+      inset 0 0 10px rgba(0,255,255,0.3),
+      0 0 10px rgba(0,255,255,0.3);
+  }
+  
+  button:hover { 
+    background:cyan; color:black; 
+    box-shadow:0 0 15px cyan,0 0 25px cyan,0 0 35px cyan; 
+  }
+  button:disabled { opacity:0.5; cursor:none; }
+  
+  /* ===== CONTENT ===== */
+  #eduContent, #cinematicContent { 
+    position:relative; z-index:10; padding:50px; max-width:1200px; margin:0 auto; text-align:center; display:none; 
+  }
+  #eduContent.show, #cinematicContent.show { display:block; }
+  
+  /* EduContent scroll */
+  #eduContent {
+    max-height:100vh;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding-bottom:50px; /* ruang untuk scroll */
+  }
+  
+  /* Scrollbar style */
+  #eduContent::-webkit-scrollbar { width:10px; }
+  #eduContent::-webkit-scrollbar-thumb { background:cyan; border-radius:5px; }
+  #eduContent::-webkit-scrollbar-track { background:rgba(0,0,0,0.1); }
+  
+  /* ===== VIDEO CINEMATIC ===== */
+  #cineVideo {
+    display:none; 
+    width:100%; 
+    max-width:900px; 
+    margin-top:20px;
+    border:2px solid cyan;
+    border-radius:6px;
+  }
+  
+  /* ===== EDU CARDS ===== */
+  #eduCards { display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin-top:30px; }
+  .eduCard {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid cyan;
+    border-radius: 12px;
+    width: 220px;
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+    cursor: none;
+    flex-shrink:0;
+    min-height: 320px;     /* ⬅ semua card konsisten */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .eduCard img {
+    width: 100%;
+    height: 130px;          /* ⬅ tinggi SERAGAM */
+    object-fit: cover;     /* ⬅ crop rapi */
+    object-position: center;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: #000;      /* ⬅ biar gambar kecil tetap cakep */
+  }
+  
+  .eduCard h2 { margin:8px 0; font-size:18px; }
+  .eduCard p { font-size:14px; line-height:1.3; }
+  .eduCard:hover { transform:translateY(-5px); box-shadow:0 0 20px cyan,0 0 30px cyan; background: rgba(0,255,255,0.1); }
+  
+  /* Responsive cards */
+  @media (max-width:768px){
+    .eduCard { width:45%; }
+  }
+  @media (max-width:480px){
+    .eduCard { width:90%; }
+  }
+  /* ===== CUSTOM CURSOR ===== */
+  #cursorOuter, #cursorInner {
+    position:fixed;
+    top:0; left:0;
+    pointer-events:none;
+    border-radius:50%;
+    transform:translate(-50%, -50%);
+    transition: transform 0.1s ease-out;
+    z-index:99999;
+  }
+  
+  #cursorInner {
+    width:8px; height:8px;
+    background:#0ff;
+    box-shadow:0 0 8px #0ff, 0 0 15px #0ff;
+  }
+  
+  #cursorOuter {
+    width:35px; height:35px;
+    border:2px solid #0ff;
+    box-shadow:0 0 15px #0ff,0 0 25px #0ff;
+    opacity:0.5;
+  }
+  #quizContent, #aboutContent {
+    position: relative;
+    z-index: 10;
+    padding: 50px;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    display: none;
+  }
+  
+  #quizContent.show, #aboutContent.show {
+    display: block;
+  }
+  
+  #quizBox {
+    margin-top: 30px;
+    padding: 30px;
+    border: 1px solid cyan;
+    border-radius: 12px;
+    background: rgba(0,255,255,0.05);
+    box-shadow: 0 0 25px rgba(0,255,255,0.3);
+  }
+  
+  #quizOptions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+  }
+  
+  #quizOptions button {
+    width: 100%;
+    max-width: 420px;
+  }
+  
+  #quizResult {
+    margin-top: 15px;
+    font-size: 16px;
+  }
+  #quizOptions button.correct {
+    background: #1aff6c;
+    color: #000;
+  }
+  
+  #quizOptions button.wrong {
+    background: #ff4d4d;
+    color: #000;
+  }
+  
+  #quizOptions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.9;
+  }
+  #newsContent{
+  position:relative;
+  z-index:10;
+  padding:50px;
+  max-width:900px;
+  margin:auto;
+  text-align:center;
+  display:none;
+  }
+  
+  #newsContent.show{
+  display:block;
+  }
+  
+  #newsBox{
+  margin-top:30px;
+  text-align:left;
+  }
+  #apodContent{
+  position:relative;
+  z-index:10;
+  padding:50px;
+  max-width:900px;
+  margin:auto;
+  text-align:center;
+  display:none;
+  }
+  
+  #apodContent.show{
+  display:block;
+  }
+  
+  #apodBox{
+  margin-top:30px;
+  padding:25px;
+  border:1px solid cyan;
+  border-radius:10px;
+  background:rgba(0,255,255,0.05);
+  }
+  
+  #apodBox img{
+  width:100%;
+  border-radius:8px;
+  margin-top:10px;
+  }
+  #galleryContent{
+  position:relative;
+  z-index:10;
+  padding:50px;
+  max-width:1100px;
+  margin:auto;
+  text-align:center;
+  display:none;
+  }
+  
+  #galleryContent.show{
+  display:block;
+  }
+  
+  #galleryBox{
+  margin-top:30px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:20px;
+  }
+  
+  .galleryCard{
+  border:1px solid cyan;
+  border-radius:10px;
+  padding:10px;
+  background:rgba(0,255,255,0.05);
+  }
+  
+  .galleryCard img{
+  width:100%;
+  border-radius:6px;
+  }
+  
+  .galleryCard p{
+  font-size:12px;
+  margin-top:5px;
+  }
+  #apodContent{
+  display:none;
+  position:relative;
+  z-index:10;
+  padding:50px;
+  max-width:900px;
+  margin:auto;
+  text-align:center;
+  }
+  
+  #apodContent.show{
+  display:block;
+  }
+  
+  #galleryContent{
+  display:none;
+  position:relative;
+  z-index:10;
+  padding:50px;
+  max-width:1100px;
+  margin:auto;
+  text-align:center;
+  }
+  
+  #galleryContent.show{
+  display:block;
+  }
+  .galleryCard{
+  border:1px solid cyan;
+  border-radius:10px;
+  padding:10px;
+  background:rgba(0,255,255,0.05);
+  }
+  
+  .galleryCard img{
+  width:100%;
+  border-radius:6px;
+  }
+  #earthContent,
+  #asteroidContent,
+  #issMapContent,
+  #milkyWayContent{
+  position:relative;
+  z-index:10;
+  padding:50px;
+  max-width:1000px;
+  margin:auto;
+  text-align:center;
+  display:none;
+  }
+  
+  #earthContent.show,
+  #asteroidContent.show,
+  #issMapContent.show,
+  #milkyWayContent.show{
+  display:block;
+  }
+  
+  #earthBox img{
+  width:100%;
+  border-radius:10px;
+  }
+  
+  #asteroidBox{
+  margin-top:20px;
+  border:1px solid cyan;
+  padding:20px;
+  border-radius:10px;
+  background:rgba(0,255,255,0.05);
+  }
+  .cinematicGrid{
+  display:grid;
+  grid-template-columns:repeat(3, 240px);
+  gap:18px;
+  justify-content:center;
+  margin-top:30px;
+  }
+  @media (max-width:768px){
+  
+  .cinematicGrid{
+  grid-template-columns:1fr;
+  }
+  
+  }

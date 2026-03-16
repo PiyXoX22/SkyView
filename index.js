@@ -1,0 +1,736 @@
+// ===== ELEMENTS =====
+const loading = document.getElementById("loadingScreen");
+const intro = document.getElementById("introScreen");
+const fade = document.getElementById("fadeOverlay");
+const playAmbienceBtn = document.getElementById("playAmbienceBtn");
+const cinematicBtn = document.getElementById("cinematicBtn");
+const eduBtn = document.getElementById("eduBtn");
+const startBtn = document.getElementById("startBtn");
+const bgMusic = document.getElementById("bgMusic");
+const hoverSound = document.getElementById("hoverSound");
+const clickSound = document.getElementById("clickSound");
+const muteBtn = document.getElementById("muteBtn");
+const eduContent = document.getElementById("eduContent");
+const cinematicContent = document.getElementById("cinematicContent");
+const cineVideo = document.getElementById("cineVideo");
+const quizBtn = document.getElementById("quizBtn");
+const aboutBtn = document.getElementById("aboutBtn");
+
+const buttons = [cinematicBtn, eduBtn, quizBtn, aboutBtn, startBtn];
+buttons.forEach(b => b.disabled = true);
+
+// ===== LOADING ANIMASI =====
+const loadingText = document.getElementById("loadingText");
+let dotCount = 0;
+let loadingInterval = setInterval(() => {
+  dotCount = (dotCount + 1) % 4;
+  loadingText.textContent = "Loading SpaDu" + ".".repeat(dotCount);
+}, 500);
+
+// LOADING → INTRO
+setTimeout(() => { 
+  clearInterval(loadingInterval);
+  loading.classList.add("hide");
+  setTimeout(()=> intro.classList.add("show"), 1200);
+}, 2500);
+
+// HOVER & CLICK SOUND
+document.querySelectorAll("button").forEach(btn => {
+  btn.addEventListener("mouseenter", () => { hoverSound.currentTime = 0; hoverSound.play().catch(()=>{}); });
+  btn.addEventListener("click", () => { clickSound.currentTime = 0; clickSound.play().catch(()=>{}); });
+});
+
+// PLAY AMBIENCE
+playAmbienceBtn.addEventListener("click", () => {
+  bgMusic.muted = false; bgMusic.play().catch(()=>{});
+  playAmbienceBtn.style.display="none";
+  buttons.forEach(b => b.disabled = false);
+});
+
+// CINEMATIC MODE
+cinematicBtn.addEventListener("click", () => {
+  intro.classList.remove("show"); cinematicContent.classList.add("show");
+});
+document.getElementById("backCineBtn").addEventListener("click", () => {
+  cinematicContent.classList.remove("show");
+  cineVideo.style.display = "none"; cineVideo.pause(); cineVideo.currentTime = 0;
+  intro.classList.add("show");
+});
+document.getElementById("startCineBtn").addEventListener("click", () => {
+  cineVideo.style.display = "block"; cineVideo.play().catch(()=>{});
+});
+
+// EDUCATIONAL MODE
+eduBtn.addEventListener("click", () => { intro.classList.remove("show"); eduContent.classList.add("show"); });
+document.getElementById("backEduBtn").addEventListener("click", () => {
+  eduContent.classList.remove("show"); intro.classList.add("show");
+});
+
+
+// START SIMULATION
+startBtn.addEventListener("click", () => {
+  fade.classList.add("show"); setTimeout(()=> window.location.href="sim.html",1300);
+});
+
+// MUTE
+let isMuted = false;
+muteBtn.addEventListener("click", () => {
+  isMuted = !isMuted; bgMusic.muted = isMuted;
+  muteBtn.textContent = isMuted ? "Unmute" : "Mute";
+});
+
+// STARFIELD
+const canvas=document.getElementById("starfield");
+const ctx=canvas.getContext("2d");
+let width=canvas.width=window.innerWidth;
+let height=canvas.height=window.innerHeight;
+const starCount=400; const stars=[];
+for(let i=0;i<starCount;i++){ stars.push({x:Math.random()*width,y:Math.random()*height,radius:Math.random()*2,alpha:Math.random()}); }
+function drawStars(){ 
+  ctx.clearRect(0,0,width,height); 
+  for(let star of stars){ 
+    ctx.beginPath(); ctx.arc(star.x,star.y,star.radius,0,Math.PI*2); 
+    ctx.fillStyle=`rgba(255,255,255,${star.alpha})`; ctx.fill(); 
+    star.alpha += (Math.random()-0.5)*0.03;
+    if(star.alpha>1) star.alpha=1; if(star.alpha<0) star.alpha=0;
+  } 
+  requestAnimationFrame(drawStars); 
+}
+drawStars();
+window.addEventListener("resize",()=>{ width=canvas.width=window.innerWidth; height=canvas.height=window.innerHeight; });
+
+// PARALLAX / 3D
+const bg = document.getElementById("bgImage");
+document.addEventListener("mousemove", e => {
+  const moveX=(e.clientX-window.innerWidth/2)/120;
+  const moveY=(e.clientY-window.innerHeight/2)/120;
+  bg.style.transform=`translate(${moveX}px, ${moveY}px) scale(1.1)`;
+});
+
+// ===== EDU CARDS DATA =====
+const astroObjects = [
+  {title:"Solar System", img:"https://cdn.teachercreated.com/covers/7633.png", desc:"Tata Surya kita terdiri dari Matahari, delapan planet, asteroid, dan komet."},
+  {title:"Mercury", img:"https://4.bp.blogspot.com/-62-djkpQLxo/WiAE0jBm8_I/AAAAAAAACNo/kstMaig2iYsYwYkwpC2Mmyesmvv9elc-QCLcBGAs/s1600/merkurius.jpg", desc:"Planet terdekat dari Matahari dan terkecil di Tata Surya."},
+  {title:"Venus", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Venus_-_December_23_2016.png/440px-Venus_-_December_23_2016.png", desc:"Planet dengan atmosfer paling tebal dan suhu permukaan sangat panas."},
+  {title:"Earth", img:"https://c.pxhere.com/photos/70/d0/astronomy_discovery_earth_galaxy_global_globe_HD_wallpaper_nasa-912001.jpg!d", desc:"Planet tempat kita hidup, satu-satunya yang diketahui mendukung kehidupan."},
+  {title:"Mars", img:"https://cdn.pixabay.com/photo/2011/12/13/14/30/mars-11012_1280.jpg", desc:"Planet merah, dipelajari untuk kemungkinan kehidupan masa lalu."},
+  {title:"Jupiter", img:"https://tse1.mm.bing.net/th/id/OIP.USphWel3PwY98chQxiO92gHaHa?pid=Api&P=0&h=180", desc:"Planet terbesar di Tata Surya dengan Badai Besar Merah."},
+  {title:"Saturn", img:"https://informatiebegin.nl/wp-content/uploads/Saturnus-2400x1524_c.jpg", desc:"Dikenal dengan cincin spektakulernya."},
+  {title:"Uranus", img:"https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2003/05/uranus2/17876812-2-eng-GB/Uranus_pillars.jpg", desc:"Planet es berwarna biru kehijauan dengan sumbu miring."},
+  {title:"Neptune", img:"https://tse3.mm.bing.net/th/id/OIP.oMYnZQfrCVNWVMsXKRmyKQHaDt?pid=Api&P=0&h=180", desc:"Planet es biru terdalam di Tata Surya."},
+  {title:"Pluto", img:"https://cdn.britannica.com/85/183485-050-C93475CB/Pluto-spacecraft-New-Horizons-July-13-2015.jpg", desc:"Dahulu planet kesembilan, kini tergolong planet kerdil."},
+
+  {title:"Alpha Centauri", img:"https://as1.ftcdn.net/jpg/06/96/02/52/1000_F_696025216_gK7KLODJacy8FCDRa3eVQhy6SttomCNl.jpg", desc:"Sistem bintang terdekat ke Matahari."},
+  {title:"Sirius", img:"https://starwalk.space/gallery/images/sirius-base/1920x1080.jpg", desc:"Bintang paling terang di langit malam Bumi."},
+  {title:"Vega", img:"https://starwalk.space/gallery/images/vega-var1/1920x1080.jpg", desc:"Bintang terang di rasi Lyra."},
+  {title:"Betelgeuse", img:"https://www.spacechatter.com/wp-content/uploads/2022/08/AdobeStock_312129542-scaled.jpeg", desc:"Supergiant merah di rasi Orion."},
+  {title:"Rigel", img:"https://images-cdn.9gag.com/photo/aGyYXQ0_700b.jpg", desc:"Bintang supergiant biru di rasi Orion."},
+  {title:"Polaris", img:"https://starwalk.space/gallery/images/polaris-base/1920x1080.jpg", desc:"Bintang Utara, penunjuk arah utara di langit."},
+  {title:"Antares", img:"https://tse3.mm.bing.net/th/id/OIP.KWwGQmrwA7DLWGxv0rTR0wHaEd?pid=Api&P=0&h=180", desc:"Supergiant merah di rasi Scorpio."},
+  {title:"Proxima Centauri", img:"http://vignette2.wikia.nocookie.net/elite-dangerous/images/c/ca/AlphaCentauriProximaCentauri.png/revision/latest?cb=20151125045631", desc:"Bintang paling dekat dengan Tata Surya kita."},
+  {title:"Deneb", img:"https://osr.org/wp-content/uploads/2020/01/deneb-star.jpg", desc:"Bintang terang di rasi Cygnus."},
+  {title:"Altair", img:"https://osr.org/wp-content/uploads/2016/08/altair-star.jpg", desc:"Bintang terang di rasi Aquila."},
+
+  {title:"Milky Way", img:"http://d1jqu7g1y74ds1.cloudfront.net/wp-content/uploads/2013/10/milky_way.jpg", desc:"Galaksi spiral tempat Bumi berada."},
+  {title:"Andromeda Galaxy", img:"https://cdn.mos.cms.futurecdn.net/hCXYB5YKXzdq2WEHYEe36d.jpg", desc:"Galaksi spiral besar terdekat dengan Bima Sakti."},
+  {title:"Triangulum Galaxy", img:"https://aasnova.org/wp-content/uploads/2022/07/sig09-004.jpg", desc:"Galaksi spiral kecil di dekat Andromeda."},
+  {title:"Whirlpool Galaxy", img:"https://astrobackyard.com/wp-content/uploads/2020/04/whirlpool-galaxy-telescope.jpg", desc:"Galaksi spiral dengan struktur jelas dan indah."},
+  {title:"Sombrero Galaxy", img:"https://i.pinimg.com/originals/9c/fa/5c/9cfa5cbde5b99ad01de2766b4196ae1b.jpg", desc:"Galaksi dengan struktur menyerupai topi sombrero."},
+  {title:"Black Eye Galaxy", img:"https://www.messier-objects.com/wp-content/uploads/2015/07/Messier-64.jpg", desc:"Galaksi dengan inti gelap unik."},
+  {title:"Pinwheel Galaxy", img:"https://astronomynow.com/wp-content/uploads/2023/04/22YB-APR-MAIN-DEEP-SKY-M101-GILLILAND.jpg", desc:"Galaksi spiral besar dan rinci."},
+  {title:"Cartwheel Galaxy", img:"https://www.courthousenews.com/wp-content/uploads/2022/08/cartwheel-galaxy-1880x1730.jpg", desc:"Galaksi berbentuk unik akibat tabrakan galaksi."},
+  {title:"Large Magellanic Cloud", img:"https://scitechdaily.com/images/the-Large-Magellanic-Cloud-a-satellite-galaxy-of-the-Milky-Way.jpg", desc:"Galaksi satelit Bima Sakti yang terlihat dari belahan bumi selatan."},
+  {title:"Small Magellanic Cloud", img:"https://astrocat.info/wp-content/uploads/2022/10/Small-Magellanic-Cloud-Aleix-Roig-2022-scaled.jpg", desc:"Galaksi satelit Bima Sakti kecil namun terang."},
+
+  {title:"Orion Nebula", img:"https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2018/05/the_orion_nebula_also_known_as_m42/17541448-1-eng-GB/The_Orion_Nebula_also_known_as_M42.jpg", desc:"Nebula emisi besar tempat lahirnya bintang baru."},
+  {title:"Eagle Nebula", img:"https://dq0hsqwjhea1.cloudfront.net/compressed-4.jpg", desc:"Nebula terkenal dengan struktur “Pillars of Creation”."},
+  {title:"Lagoon Nebula", img:"https://www.messier-objects.com/wp-content/uploads/2015/02/Lagoon-Nebula.jpg", desc:"Nebula emisi di rasi Sagitarius."},
+  {title:"Ring Nebula", img:"https://www.galacticimages.com/wp-content/uploads/2021/07/M57_color630secChumackHRblog.jpg", desc:"Nebula planet yang berbentuk cincin."},
+  {title:"Helix Nebula", img:"https://skyandtelescope.org/wp-content/uploads/Helix-Nebula-Compressed-scaled.jpg", desc:"Nebula planet yang disebut “mata Tuhan”."},
+  {title:"Crab Nebula", img:"https://static.vecteezy.com/system/resources/previews/024/394/081/non_2x/capturing-the-intricate-details-of-the-crab-nebula-a-supernova-remnant-that-is-one-of-the-most-studied-andgraphed-deep-space-objects-generate-ai-free-photo.jpg", desc:"Sisa supernova berenergi tinggi."},
+  {title:"Carina Nebula", img:"https://static.vecteezy.com/system/resources/previews/024/388/213/large_2x/using-multiple-exposures-to-create-a-detailed-and-colorful-image-of-the-carina-nebula-a-star-forming-region-located-in-the-southern-constellation-carina-generate-ai-free-photo.jpg", desc:"Nebula emisi besar di konstelasi Carina."},
+  {title:"Horsehead Nebula", img:"http://apod.nasa.gov/apod/image/1505/Horsehead_Colombari_2035.jpg", desc:"Nebula gelap berbentuk kepala kuda."},
+  {title:"Rosette Nebula", img:"https://chamberlainobservatory.com/wp-content/uploads/2020/02/20200202-Caldwell-49-Rosette-Nebula-HOO-palette-2048x1561.jpg", desc:"Nebula berbentuk bunga mawar."},
+  {title:"Trifid Nebula", img:"http://www.constellation-guide.com/wp-content/uploads/2014/08/Trifid-Nebula.jpg", desc:"Nebula tiga lobus besar di Sagitarius."},
+
+  {title:"Pleiades", img:"https://apod.nasa.gov/apod/image/1209/m45_gendler_2400.jpg", desc:"Gugus bintang terbuka terkenal juga dengan nama Tujuh Saudari."},
+  {title:"Hyades", img:"https://astronomynow.com/wp-content/uploads/2017/03/Aldebaran-Moon-Hyades_4Mar2017_844pm_GMT_central_UK_940x705_v2.png", desc:"Gugus bintang terbuka besar di rasi Taurus."},
+  {title:"Omega Centauri", img:"https://cdn.britannica.com/48/142648-050-DD2D538C/stars-core-cluster-Omega-Centauri-Hubble-Space.jpg", desc:"Gugus bola terbesar di Bima Sakti."},
+  {title:"M13 Hercules", img:"https://earthsky.org/upl/2014/04/M13-hercules-Bareket-Observatory-Israel-e1398075260650.jpg", desc:"Gugus bola terang di rasi Hercules."},
+  {title:"M22", img:"https://www.messier-objects.com/wp-content/uploads/2015/04/Messier-22-1024x679.jpg", desc:"Gugus bola di dekat pusat Bima Sakti."},
+  {title:"47 Tucanae", img:"https://thumbs.dreamstime.com/b/tucanae-tuc-also-designated-as-ngc-caldwell-globular-cluster-located-constellation-tucana-tucanae-second-306642434.jpg", desc:"Gugus bola terang di rasi Tucana."},
+
+  {title:"Exoplanet Kepler-22b", img:"https://cdn.mos.cms.futurecdn.net/MDtGBHDVJ5cdmQDWuCRD68.jpg", desc:"Salah satu exoplanet pertama yang ditemukan di zona layak huni."},
+  {title:"Exoplanet Proxima b", img:"http://campbelllawobserver.com/wp-content/uploads/2016/09/Proxima-b-Photo-by-sciencealert.com-Courtesy-of-Google.jpg", desc:"Exoplanet yang mengorbit Proxima Centauri."},
+  {title:"Exoplanet TRAPPIST-1e", img:"http://upload.wikimedia.org/wikipedia/commons/3/38/TRAPPIST-1e_artist_impression_2018.png", desc:"Salah satu planet di sistem TRAPPIST-1 yang menarik."},
+  {title:"Comet Halley", img:"https://ichef.bbci.co.uk/news/976/mcs/media/images/76726000/jpg/_76726414_halley2.jpg", desc:"Komet paling terkenal yang muncul setiap ~76 tahun."},
+  {title:"Asteroid Ceres", img:"https://static.independent.co.uk/2022/02/23/00/Ceres.jpg", desc:"Planet kerdil di sabuk asteroid."}
+];
+
+
+// GENERATE CARDS
+const eduCardsContainer = document.getElementById("eduCards");
+astroObjects.forEach(obj => {
+  const card = document.createElement("div"); card.className="eduCard";
+  card.innerHTML=`<img src="${obj.img}" alt="${obj.title}"><h2>${obj.title}</h2><p>${obj.desc}</p>`;
+  eduCardsContainer.appendChild(card);
+});
+// Duplikat sampai 50
+while(eduCardsContainer.children.length<50){
+  for(let i=0;i<astroObjects.length;i++){
+    if(eduCardsContainer.children.length>=50) break;
+    const clone = eduCardsContainer.children[i%astroObjects.length].cloneNode(true);
+    eduCardsContainer.appendChild(clone);
+  }
+}
+// ===== CUSTOM CURSOR =====
+const cursorInner = document.getElementById("cursorInner");
+const cursorOuter = document.getElementById("cursorOuter");
+
+let mouseX = 0, mouseY = 0;
+let posX = 0, posY = 0;
+let scaleOuter = 1; // skala default
+
+document.addEventListener("mousemove", e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    // Inner cursor langsung mengikuti mouse
+    cursorInner.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+
+    // Outer cursor smooth mengikuti mouse + scale
+    posX += (mouseX - posX) * 0.15;
+    posY += (mouseY - posY) * 0.15;
+    cursorOuter.style.transform = `translate(${posX}px, ${posY}px) scale(${scaleOuter})`;
+});
+
+// Hover efek pada button / card
+document.querySelectorAll("button, .eduCard").forEach(el => {
+    el.addEventListener("mouseenter", () => {
+        scaleOuter = 1.5;
+        cursorOuter.style.opacity = "0.8";
+    });
+    el.addEventListener("mouseleave", () => {
+        scaleOuter = 1;
+        cursorOuter.style.opacity = "0.5";
+    });
+});
+
+const quizData = [
+  // === DASAR ===
+  { q: "Planet terdekat dari Matahari adalah?", options: ["Venus", "Mars", "Mercury", "Earth"], answer: 2 },
+  { q: "Planet terbesar di Tata Surya adalah?", options: ["Saturnus", "Jupiter", "Neptunus", "Uranus"], answer: 1 },
+  { q: "Planet yang dijuluki Planet Merah adalah?", options: ["Venus", "Mars", "Mercury", "Jupiter"], answer: 1 },
+  { q: "Satelit alami Bumi disebut?", options: ["Europa", "Titan", "Moon", "Phobos"], answer: 2 },
+  { q: "Planet dengan cincin paling jelas adalah?", options: ["Jupiter", "Uranus", "Neptunus", "Saturnus"], answer: 3 },
+  { q: "Planet terpanas di Tata Surya adalah?", options: ["Mercury", "Venus", "Mars", "Jupiter"], answer: 1 },
+  { q: "Planet terjauh dari Matahari adalah?", options: ["Uranus", "Saturnus", "Neptunus", "Pluto"], answer: 2 },
+  { q: "Sabuk asteroid terletak di antara planet?", options: ["Bumi & Mars", "Mars & Jupiter", "Jupiter & Saturnus", "Venus & Bumi"], answer: 1 },
+  { q: "Ilmu yang mempelajari benda langit disebut?", options: ["Astrofisika", "Kosmologi", "Astronomi", "Geologi"], answer: 2 },
+  { q: "Bintang paling terang di langit malam adalah?", options: ["Sirius", "Rigel", "Betelgeuse", "Polaris"], answer: 0 },
+
+  // === MATAHARI & BINTANG ===
+  { q: "Matahari termasuk jenis bintang apa?", options: ["Red Giant", "Yellow Dwarf", "White Dwarf", "Neutron Star"], answer: 1 },
+  { q: "Lapisan Matahari yang terlihat saat gerhana total disebut?", options: ["Fotosfer", "Kromosfer", "Korona", "Inti"], answer: 2 },
+  { q: "Bintang penunjuk arah utara adalah?", options: ["Sirius", "Vega", "Polaris", "Altair"], answer: 2 },
+  { q: "Bintang neutron terbentuk dari?", options: ["Planet", "Bintang kecil", "Runtuhan bintang masif", "Nebula"], answer: 2 },
+  { q: "Ledakan akhir kehidupan bintang masif disebut?", options: ["Nova", "Supernova", "Nebula", "Quasar"], answer: 1 },
+
+  // === GALAKSI ===
+  { q: "Galaksi tempat kita tinggal disebut?", options: ["Andromeda", "Triangulum", "Milky Way", "Sombrero"], answer: 2 },
+  { q: "Galaksi terdekat dengan Bima Sakti adalah?", options: ["Sombrero", "Whirlpool", "Andromeda", "Cartwheel"], answer: 2 },
+  { q: "Lubang hitam supermasif biasanya berada di?", options: ["Ujung galaksi", "Pusat galaksi", "Dekat planet", "Nebula"], answer: 1 },
+  { q: "Bentuk galaksi Bima Sakti adalah?", options: ["Elips", "Tak beraturan", "Spiral", "Cincin"], answer: 2 },
+
+  // === BLACK HOLE ===
+  { q: "Apa itu Black Hole?", options: ["Bintang terang", "Planet gelap", "Wilayah gravitasi ekstrem", "Nebula panas"], answer: 2 },
+  { q: "Batas cahaya tidak bisa keluar dari Black Hole disebut?", options: ["Singularity", "Event Horizon", "Accretion Disk", "Photon Ring"], answer: 1 },
+  { q: "Black Hole terbentuk dari runtuhnya?", options: ["Planet", "Asteroid", "Bintang masif", "Nebula"], answer: 2 },
+  { q: "Bagian pusat Black Hole disebut?", options: ["Korona", "Inti", "Singularity", "Core"], answer: 2 },
+
+  // === NEBULA ===
+  { q: "Nebula adalah?", options: ["Planet mati", "Awan gas dan debu", "Lubang hitam kecil", "Inti galaksi"], answer: 1 },
+  { q: "Nebula tempat kelahiran bintang disebut?", options: ["Planetary Nebula", "Supernova Remnant", "Stellar Nursery", "Dark Nebula"], answer: 2 },
+  { q: "Nebula Orion termasuk jenis?", options: ["Emission Nebula", "Dark Nebula", "Planetary Nebula", "Reflection Nebula"], answer: 0 },
+
+  // === EXOPLANET ===
+  { q: "Exoplanet adalah?", options: ["Planet Tata Surya", "Planet di luar Tata Surya", "Bulan", "Bintang kecil"], answer: 1 },
+  { q: "Metode paling umum mendeteksi exoplanet?", options: ["Direct Imaging", "Transit Method", "Radio", "Infrared"], answer: 1 },
+  { q: "Teleskop pemburu exoplanet terkenal adalah?", options: ["Hubble", "Kepler", "Chandra", "Spitzer"], answer: 1 },
+
+  // === FENOMENA ===
+  { q: "Fenomena Bulan menutupi Matahari disebut?", options: ["Gerhana Bulan", "Gerhana Matahari", "Ekliptika", "Solstis"], answer: 1 },
+  { q: "Hujan meteor terjadi karena?", options: ["Ledakan bintang", "Debu komet", "Tabrakan planet", "Nebula"], answer: 1 },
+  { q: "Gaya yang mengikat planet ke Matahari adalah?", options: ["Magnet", "Tekanan", "Gravitasi", "Radiasi"], answer: 2 },
+
+  // === LANJUTAN ===
+  { q: "Planet dengan rotasi paling lama adalah?", options: ["Mars", "Venus", "Mercury", "Neptunus"], answer: 1 },
+  { q: "Planet dengan kemiringan sumbu ekstrem?", options: ["Mars", "Uranus", "Saturnus", "Jupiter"], answer: 1 },
+  { q: "Kecepatan cahaya adalah sekitar?", options: ["30.000 km/s", "300.000 km/s", "3.000 km/s", "3 juta km/s"], answer: 1 },
+  { q: "Satuan jarak astronomi antar bintang disebut?", options: ["AU", "Parsec", "Km", "Meter"], answer: 1 }
+];
+
+
+// =====================
+// ELEMENT
+// =====================
+const quizContent = document.getElementById("quizContent");
+const aboutContent = document.getElementById("aboutContent");
+const backQuizBtn = document.getElementById("backQuizBtn");
+const backAboutBtn = document.getElementById("backAboutBtn");
+
+const quizQuestion = document.getElementById("quizQuestion");
+const quizOptions  = document.getElementById("quizOptions");
+const quizResult   = document.getElementById("quizResult");
+const nextQuestionBtn = document.getElementById("nextQuestionBtn");
+
+// =====================
+// AUDIO
+// =====================
+const correctSound = new Audio("audio/correct.mp3");
+const wrongSound   = new Audio("audio/wrong.mp3");
+
+// =====================
+// STATE
+// =====================
+let quizIndex = 0;
+let score = 0;
+let answered = false;
+let selectedQuiz = [];
+
+// =====================
+// SHUFFLE
+// =====================
+function shuffleArray(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+// =====================
+// START QUIZ (10 SOAL ACAK)
+// =====================
+function startQuiz() {
+  selectedQuiz = shuffleArray([...quizData]).slice(0, 10);
+  quizIndex = 0;
+  score = 0;
+  loadQuiz();
+}
+
+// =====================
+// LOAD QUIZ
+// =====================
+function loadQuiz() {
+  answered = false;
+  quizResult.textContent = "";
+  quizOptions.innerHTML = "";
+
+  if (quizIndex >= selectedQuiz.length) {
+    showResult();
+    return;
+  }
+
+  const data = selectedQuiz[quizIndex];
+  quizQuestion.textContent = `(${quizIndex + 1}/10) ${data.q}`;
+
+  data.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = opt;
+
+    btn.onclick = () => {
+      if (!answered) checkAnswer(i);
+    };
+
+    quizOptions.appendChild(btn);
+  });
+}
+
+// =====================
+// CHECK ANSWER
+// =====================
+function checkAnswer(selected) {
+  answered = true;
+  const correct = selectedQuiz[quizIndex].answer;
+  const buttons = quizOptions.querySelectorAll("button");
+
+  buttons.forEach((btn, i) => {
+    if (i === correct) btn.classList.add("correct");
+    if (i === selected && selected !== correct) btn.classList.add("wrong");
+    btn.disabled = true;
+  });
+
+  if (selected === correct) {
+    score++;
+    quizResult.textContent = "✅ Jawaban benar!";
+    correctSound.currentTime = 0;
+    correctSound.play();
+  } else {
+    quizResult.textContent = "❌ Jawaban salah";
+    wrongSound.currentTime = 0;
+    wrongSound.play();
+  }
+}
+
+// =====================
+// NEXT QUESTION
+// =====================
+nextQuestionBtn.onclick = () => {
+  if (!answered) return;
+  quizIndex++;
+  loadQuiz();
+};
+
+// =====================
+// RESULT + EVALUASI
+// =====================
+function showResult() {
+  const percent = Math.round((score / selectedQuiz.length) * 100);
+
+  let evaluation = "";
+  if (percent >= 85) {
+    evaluation = "🌟 Luar biasa! Kamu sangat paham astronomi.";
+  } else if (percent >= 60) {
+    evaluation = "👍 Bagus! Pemahamanmu sudah cukup kuat.";
+  } else if (percent >= 40) {
+    evaluation = "🙂 Lumayan, tapi masih bisa ditingkatkan.";
+  } else {
+    evaluation = "📚 Jangan menyerah! Yuk belajar astronomi lagi.";
+  }
+
+  quizQuestion.textContent = "📊 Hasil Quiz";
+  quizOptions.innerHTML = `
+    <p><b>Skor:</b> ${score} / 10</p>
+    <p><b>Nilai:</b> ${percent}%</p>
+    <p style="margin-top:15px">${evaluation}</p>
+    <button onclick="startQuiz()">🔁 Main Lagi</button>
+  `;
+  quizResult.textContent = "";
+}
+
+// =====================
+// NAVIGATION
+// =====================
+quizBtn.addEventListener("click", () => {
+  intro.classList.remove("show");
+  quizContent.classList.add("show");
+  startQuiz();
+});
+
+aboutBtn.addEventListener("click", () => {
+  intro.classList.remove("show");
+  aboutContent.classList.add("show");
+});
+
+backQuizBtn.onclick = () => {
+  quizContent.classList.remove("show");
+  intro.classList.add("show");
+};
+
+backAboutBtn.onclick = () => {
+  aboutContent.classList.remove("show");
+  intro.classList.add("show");
+};
+
+const issBtn = document.getElementById("issBtn");
+const issContent = document.getElementById("issContent");
+const backISSBtn = document.getElementById("backISSBtn");
+
+issBtn.addEventListener("click",()=>{
+cinematicContent.classList.remove("show");
+issContent.classList.add("show");
+loadISS();
+});
+
+backISSBtn.onclick=()=>{
+issContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
+
+async function loadISS(){
+
+try{
+
+const res = await fetch("https://api.wheretheiss.at/v1/satellites/25544");
+const data = await res.json();
+
+document.getElementById("issData").innerHTML=`
+🛰 Latitude: ${data.latitude.toFixed(2)} <br>
+🛰 Longitude: ${data.longitude.toFixed(2)} <br>
+🛰 Altitude: ${data.altitude.toFixed(2)} km <br>
+🛰 Velocity: ${data.velocity.toFixed(0)} km/h
+`;
+
+}catch(e){
+
+document.getElementById("issData").textContent="ISS data unavailable";
+
+}
+
+}
+
+document.getElementById("refreshISS").onclick=loadISS;
+const newsBtn=document.getElementById("newsBtn");
+const newsContent=document.getElementById("newsContent");
+const backNewsBtn=document.getElementById("backNewsBtn");
+
+newsBtn.addEventListener("click",()=>{
+cinematicContent.classList.remove("show");
+newsContent.classList.add("show");
+loadSpaceNews();
+});
+
+backNewsBtn.onclick=()=>{
+newsContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
+
+async function loadSpaceNews(){
+
+const res=await fetch("https://api.spaceflightnewsapi.net/v4/articles/?limit=5");
+const data=await res.json();
+
+const container=document.getElementById("newsBox");
+
+container.innerHTML="";
+
+data.results.forEach(article=>{
+
+const div=document.createElement("div");
+
+div.innerHTML=`
+<h3>${article.title}</h3>
+<p>${article.summary}</p>
+<a href="${article.url}" target="_blank">Read more</a>
+<hr>
+`;
+
+container.appendChild(div);
+
+});
+
+}
+
+// ======================
+// NASA APOD (Astronomy Picture of the Day)
+// ======================
+
+const apodBtn = document.querySelector("#apodBtn");
+const apodContent = document.getElementById("apodContent");
+const backApodBtn = document.getElementById("backApodBtn");
+
+apodBtn.addEventListener("click",()=>{
+cinematicContent.classList.remove("show");
+apodContent.classList.add("show");
+loadAPOD();
+});
+
+backApodBtn.onclick=()=>{
+apodContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
+
+async function loadAPOD(){
+
+try{
+
+const res = await fetch(
+"https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+);
+
+const data = await res.json();
+
+document.getElementById("apodBox").innerHTML=`
+
+<h2>${data.title}</h2>
+
+<p>${data.date}</p>
+
+<img src="${data.url}">
+
+<p>${data.explanation.substring(0,400)}...</p>
+
+`;
+
+}catch{
+
+document.getElementById("apodBox").textContent="APOD unavailable";
+
+}
+
+}
+const apodGalleryBtn=document.getElementById("apodGalleryBtn");
+const galleryContent=document.getElementById("galleryContent");
+const backGalleryBtn=document.getElementById("backGalleryBtn");
+
+apodGalleryBtn.addEventListener("click",()=>{
+cinematicContent.classList.remove("show");
+galleryContent.classList.add("show");
+loadGallery();
+});
+
+backGalleryBtn.onclick=()=>{
+galleryContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
+let galleryPage = 0;
+
+async function loadGallery(){
+
+const box = document.getElementById("galleryBox");
+
+if(galleryPage === 0){
+box.innerHTML = "Loading NASA Gallery...";
+}
+
+try{
+
+const res = await fetch(
+`https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&count=20`
+);
+
+const data = await res.json();
+
+if(galleryPage === 0){
+box.innerHTML = "";
+}
+
+data.forEach(item => {
+
+if(item.media_type !== "image") return;
+
+const card = document.createElement("div");
+card.className = "galleryCard";
+
+card.innerHTML = `
+<img src="${item.url}">
+<h3>${item.title}</h3>
+<p>${item.date}</p>
+`;
+
+box.appendChild(card);
+
+});
+
+galleryPage++;
+
+}catch{
+
+box.innerHTML = "Gallery unavailable";
+
+}
+
+} 
+document.getElementById("loadMoreGallery").onclick = () => {
+loadGallery();
+};  
+// ============================
+// LIVE EARTH
+// ============================
+
+const earthBtn=document.getElementById("earthBtn");
+const earthContent=document.getElementById("earthContent");
+const backEarthBtn=document.getElementById("backEarthBtn");
+
+earthBtn.onclick=()=>{
+cinematicContent.classList.remove("show");
+earthContent.classList.add("show");
+};
+
+backEarthBtn.onclick=()=>{
+earthContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
+
+
+// ============================
+// ASTEROID TRACKER
+// ============================
+
+const asteroidBtn=document.getElementById("asteroidBtn");
+const asteroidContent=document.getElementById("asteroidContent");
+const backAsteroidBtn=document.getElementById("backAsteroidBtn");
+
+asteroidBtn.onclick=()=>{
+cinematicContent.classList.remove("show");
+asteroidContent.classList.add("show");
+loadAsteroids();
+};
+
+backAsteroidBtn.onclick=()=>{
+asteroidContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
+
+async function loadAsteroids(){
+
+try{
+
+const res=await fetch(
+"https://api.nasa.gov/neo/rest/v1/feed?api_key=DEMO_KEY"
+);
+
+const data=await res.json();
+
+const box=document.getElementById("asteroidBox");
+
+box.innerHTML="";
+
+const today=Object.keys(data.near_earth_objects)[0];
+
+data.near_earth_objects[today].slice(0,5).forEach(ast=>{
+
+box.innerHTML+=`
+<p>
+☄ ${ast.name}<br>
+Size: ${Math.round(ast.estimated_diameter.meters.estimated_diameter_max)} m<br>
+Dangerous: ${ast.is_potentially_hazardous_asteroid}
+</p>
+<hr>
+`;
+
+});
+
+}catch{
+
+document.getElementById("asteroidBox").textContent="Asteroid data unavailable";
+
+}
+
+}
+
+
+// ============================
+// ISS LIVE MAP
+// ============================
+
+const issMapBtn=document.getElementById("issMapBtn");
+const issMapContent=document.getElementById("issMapContent");
+const backISSMapBtn=document.getElementById("backISSMapBtn");
+
+issMapBtn.onclick=()=>{
+cinematicContent.classList.remove("show");
+issMapContent.classList.add("show");
+};
+
+backISSMapBtn.onclick=()=>{
+issMapContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
+
+
+
+// ============================
+// MILKY WAY MAP
+// ============================
+
+const milkyBtn=document.getElementById("milkyBtn");
+const milkyWayContent=document.getElementById("milkyWayContent");
+const backMilkyBtn=document.getElementById("backMilkyBtn");
+
+milkyBtn.onclick=()=>{
+cinematicContent.classList.remove("show");
+milkyWayContent.classList.add("show");
+};
+
+backMilkyBtn.onclick=()=>{
+milkyWayContent.classList.remove("show");
+cinematicContent.classList.add("show");
+};
